@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: eeef422b23bf8e0469514aba0c593941
+AssetOrigin:
+  serializedVersion: 1
+  productId: 395140
+  packageName: 'FuzzyIDE: Code Editor, Git, Notes & Terminal'
+  packageVersion: 1.1.0
+  assetPath: Assets/FuzzyLogicLabs/FuzzyIDE/Editor/TestRunner/TestRunnerIntegration.cs
+  uploadId: 1029330

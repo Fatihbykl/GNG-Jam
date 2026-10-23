@@ -1,0 +1,382 @@
+/* ============================================================
+   Fuzzy Notes stylesheet
+   Colors that depend on the IDE theme are set from C# (NotesTheme).
+   This sheet owns structure, spacing and interaction states, using
+   translucent overlays so it works on every theme.
+   Spacing scale: 2 / 4 / 8 / 12 / 16 · font scale: 11 / 12 / 13 / 15
+   ============================================================ */
+
+.fn-theme--dark {
+    --fn-hover: rgba(255, 255, 255, 0.075);
+    --fn-active: rgba(255, 255, 255, 0.12);
+    --fn-input-bg: rgba(255, 255, 255, 0.045);
+    --fn-input-border: rgba(255, 255, 255, 0.1);
+    --fn-focus: rgba(255, 255, 255, 0.28);
+}
+
+.fn-theme--light {
+    --fn-hover: rgba(0, 0, 0, 0.055);
+    --fn-active: rgba(0, 0, 0, 0.1);
+    --fn-input-bg: rgba(255, 255, 255, 0.85);
+    --fn-input-border: rgba(0, 0, 0, 0.14);
+    --fn-focus: rgba(0, 0, 0, 0.32);
+}
+
+/* ── Icons & icon buttons ─────────────────────────────────── */
+
+.fn-icon-btn {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    min-width: 26px;
+    height: 26px;
+    margin: 0 1px;
+    padding: 0 5px;
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    border-radius: 4px;
+    opacity: 0.7;
+    transition-property: background-color, opacity;
+    transition-duration: 0.12s;
+}
+
+.fn-icon-btn:hover {
+    background-color: var(--fn-hover);
+    opacity: 1;
+}
+
+.fn-icon-btn:active {
+    background-color: var(--fn-active);
+}
+
+.fn-icon-btn--on {
+    background-color: var(--fn-active);
+    opacity: 1;
+}
+
+.fn-icon-btn--small {
+    min-width: 20px;
+    height: 20px;
+    padding: 0 3px;
+}
+
+/* ── Text buttons ─────────────────────────────────────────── */
+
+.fn-btn {
+    flex-direction: row;
+    align-items: center;
+    height: 24px;
+    margin: 0 2px;
+    padding: 0 10px;
+    font-size: 12px;
+    background-color: var(--fn-input-bg);
+    border-width: 1px;
+    border-color: var(--fn-input-border);
+    border-radius: 4px;
+    transition-property: background-color;
+    transition-duration: 0.12s;
+}
+
+.fn-btn:hover {
+    background-color: var(--fn-hover);
+}
+
+.fn-btn:active {
+    background-color: var(--fn-active);
+}
+
+/* accent background/text come from NotesTheme */
+.fn-btn--primary {
+    border-width: 0;
+    -unity-font-style: bold;
+}
+
+.fn-btn--primary:hover {
+    opacity: 0.88;
+}
+
+/* ── List / tree rows ─────────────────────────────────────── */
+
+.fn-row {
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+    height: 26px;
+    margin: 0 6px;
+    padding-right: 6px;
+    border-radius: 4px;
+    transition-property: background-color;
+    transition-duration: 0.08s;
+}
+
+.fn-row:hover {
+    background-color: var(--fn-hover);
+}
+
+.fn-row-label {
+    flex-grow: 1;
+    flex-shrink: 1;
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fn-row-meta {
+    flex-shrink: 0;
+    margin-left: 6px;
+    font-size: 11px;
+}
+
+.fn-section-title {
+    font-size: 11px;
+    -unity-font-style: bold;
+    padding: 10px 14px 4px 14px;
+    letter-spacing: 0.5px;
+}
+
+/* ── Pills (tags) ─────────────────────────────────────────── */
+
+.fn-pill {
+    height: 20px;
+    margin: 0 4px 0 0;
+    padding: 0 8px;
+    font-size: 11px;
+    border-width: 0;
+    border-radius: 10px;
+    transition-property: background-color, opacity;
+    transition-duration: 0.12s;
+}
+
+.fn-pill:hover {
+    opacity: 0.85;
+}
+
+/* ── Inputs ───────────────────────────────────────────────── */
+
+.fn-input {
+    margin: 0;
+}
+
+.fn-input > .unity-base-text-field__input {
+    min-height: 26px;
+    padding: 2px 8px;
+    font-size: 13px;
+    background-color: var(--fn-input-bg);
+    border-width: 1px;
+    border-color: var(--fn-input-border);
+    border-radius: 5px;
+}
+
+.fn-input:focus > .unity-base-text-field__input {
+    border-color: var(--fn-focus);
+}
+
+/* A title field that looks like text until it is edited. */
+.fn-input--bare > .unity-base-text-field__input {
+    background-color: rgba(0, 0, 0, 0);
+    border-color: rgba(0, 0, 0, 0);
+    padding-left: 2px;
+}
+
+.fn-input--bare:hover > .unity-base-text-field__input {
+    background-color: var(--fn-hover);
+}
+
+.fn-input--bare:focus > .unity-base-text-field__input {
+    background-color: var(--fn-input-bg);
+    border-color: var(--fn-input-border);
+}
+
+/* The note title inside the page: plain heading text, editable in place. */
+.fn-inline-title {
+    margin: 0;
+}
+
+.fn-inline-title > .unity-base-text-field__input {
+    padding: 0;
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    white-space: normal;
+}
+
+/* ── Bars ─────────────────────────────────────────────────── */
+
+.fn-toolbar {
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+    height: 34px;
+    padding: 0 6px;
+    border-bottom-width: 1px;
+}
+
+.fn-statusbar {
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+    height: 24px;
+    padding: 0 10px;
+    border-top-width: 1px;
+    font-size: 11px;
+}
+
+.fn-statusbar-item {
+    font-size: 11px;
+    margin-left: 14px;
+}
+
+/* ── Tabs ─────────────────────────────────────────────────── */
+
+.fn-tab {
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 1;
+    min-width: 80px;
+    max-width: 200px;
+    height: 28px;
+    margin: 4px 1px 0 1px;
+    padding: 0 4px 0 10px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    transition-property: background-color;
+    transition-duration: 0.08s;
+}
+
+.fn-tab:hover {
+    background-color: var(--fn-hover);
+}
+
+.fn-tab-label {
+    flex-grow: 1;
+    flex-shrink: 1;
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* the close button is only visible on hover and on the active tab */
+.fn-tab .fn-icon-btn {
+    opacity: 0;
+}
+
+.fn-tab:hover .fn-icon-btn,
+.fn-tab--active .fn-icon-btn {
+    opacity: 0.7;
+}
+
+.fn-tab .fn-icon-btn:hover {
+    opacity: 1;
+}
+
+/* ── Popups & overlays ────────────────────────────────────── */
+
+.fn-popup {
+    border-width: 1px;
+    border-radius: 8px;
+    padding: 6px;
+}
+
+.fn-popup-item {
+    flex-direction: row;
+    align-items: center;
+    min-height: 28px;
+    padding: 3px 8px;
+    border-radius: 5px;
+}
+
+.fn-kbd {
+    font-size: 10px;
+    padding: 1px 5px;
+    margin-left: 6px;
+    border-width: 1px;
+    border-color: var(--fn-input-border);
+    border-radius: 3px;
+    background-color: var(--fn-input-bg);
+}
+
+.fn-empty {
+    font-size: 12px;
+    -unity-font-style: italic;
+    padding: 8px 14px;
+    white-space: normal;
+}
+
+/* ── Helpers ──────────────────────────────────────────────── */
+
+.fn-flip-y .fn-icon {
+    rotate: 180deg;
+}
+
+/* ── File explorer (ListView) ─────────────────────────────── */
+
+.fn-explorer .unity-collection-view__item {
+    margin: 0 6px;
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.fn-explorer .unity-collection-view__item:hover {
+    background-color: var(--fn-hover);
+}
+
+.fn-explorer .unity-collection-view__item--selected,
+.fn-explorer:focus .unity-collection-view__item--selected {
+    background-color: var(--fn-active);
+}
+
+.fn-explorer:focus .unity-collection-view__item--selected {
+    border-left-width: 2px;
+    border-left-color: var(--fn-focus);
+}
+
+/* ── Toasts (NoteToast) ───────────────────────────────────── */
+
+.fn-toast {
+    flex-direction: row;
+    align-items: center;
+    min-height: 36px;
+    margin-top: 8px;
+    padding: 6px 6px 6px 12px;
+    border-width: 1px;
+    border-radius: 8px;
+    opacity: 1;
+    transition-property: opacity, translate;
+    transition-duration: 0.18s;
+}
+
+.fn-toast--hidden {
+    opacity: 0;
+    translate: 0 8px;
+}
+
+/* palette section headers */
+.fn-popup-section {
+    font-size: 11px;
+    -unity-font-style: bold;
+    padding: 8px 8px 3px 8px;
+}
+
+/* ── Keyboard focus (only after Tab, see NotesTheme) ──────── */
+
+.fn-keyboard-nav .fn-icon-btn:focus,
+.fn-keyboard-nav .fn-btn:focus,
+.fn-keyboard-nav .fn-row:focus {
+    border-width: 1px;
+    border-color: var(--fn-focus);
+    opacity: 1;
+}
+
+.fn-keyboard-nav .fn-input:focus > .unity-base-text-field__input {
+    border-width: 1px;
+    border-color: var(--fn-focus);
+}
+
+/* ── Sidebars ─────────────────────────────────────────────── */
+
+.fn-sidebar-host {
+    transition-property: opacity;
+    transition-duration: 0.15s;
+}

@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 606ce324f55a9dd4cafbd2b6c373969c
+AssetOrigin:
+  serializedVersion: 1
+  productId: 395140
+  packageName: 'FuzzyIDE: Code Editor, Git, Notes & Terminal'
+  packageVersion: 1.1.0
+  assetPath: Assets/FuzzyLogicLabs/FuzzyIDE/Editor/Notes/Core/CodeTodoScanner.cs
+  uploadId: 1029330

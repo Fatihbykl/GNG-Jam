@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: cb376b3f4a212bf47b20d4b6a9dfc19a
+AssetOrigin:
+  serializedVersion: 1
+  productId: 395140
+  packageName: 'FuzzyIDE: Code Editor, Git, Notes & Terminal'
+  packageVersion: 1.1.0
+  assetPath: Assets/FuzzyLogicLabs/FuzzyIDE/Editor/Terminal/Libs/Assemblies/Pty.Net.dll
+  uploadId: 1029330

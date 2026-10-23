@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: bf655f88c52f3994cab3e827c7513956
+AssetOrigin:
+  serializedVersion: 1
+  productId: 395140
+  packageName: 'FuzzyIDE: Code Editor, Git, Notes & Terminal'
+  packageVersion: 1.1.0
+  assetPath: Assets/FuzzyLogicLabs/FuzzyIDE/Editor/Git/GitDataModels.cs
+  uploadId: 1029330

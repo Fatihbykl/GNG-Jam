@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: afa1eaa5f82ace340a65842c8bff1105
+AssetOrigin:
+  serializedVersion: 1
+  productId: 395140
+  packageName: 'FuzzyIDE: Code Editor, Git, Notes & Terminal'
+  packageVersion: 1.1.0
+  assetPath: Assets/FuzzyLogicLabs/FuzzyIDE/Editor/Terminal/ConPtyResize.cs
+  uploadId: 1029330

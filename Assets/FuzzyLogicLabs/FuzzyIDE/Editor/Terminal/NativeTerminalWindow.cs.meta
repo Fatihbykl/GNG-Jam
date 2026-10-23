@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: eb174f089392d32429fa5f04b5a47dc1
+AssetOrigin:
+  serializedVersion: 1
+  productId: 395140
+  packageName: 'FuzzyIDE: Code Editor, Git, Notes & Terminal'
+  packageVersion: 1.1.0
+  assetPath: Assets/FuzzyLogicLabs/FuzzyIDE/Editor/Terminal/NativeTerminalWindow.cs
+  uploadId: 1029330

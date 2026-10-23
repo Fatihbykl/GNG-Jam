@@ -1,0 +1,28 @@
+{
+    "name": "FuzzyLogicLabs.FuzzyIDE.Editor.TestRunner",
+    "rootNamespace": "",
+    "references": [
+        "FuzzyLogicLabs.FuzzyIDE.Editor",
+        "UnityEditor.TestRunner",
+        "UnityEngine.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "FUZZYIDE_TEST_FRAMEWORK"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.test-framework",
+            "expression": "1.1.0",
+            "define": "FUZZYIDE_TEST_FRAMEWORK"
+        }
+    ],
+    "noEngineReferences": false
+}

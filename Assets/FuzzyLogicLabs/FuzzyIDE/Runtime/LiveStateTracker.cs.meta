@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: eb2bafdd09a7d7d4c9c7fc07d41a57e5
+AssetOrigin:
+  serializedVersion: 1
+  productId: 395140
+  packageName: 'FuzzyIDE: Code Editor, Git, Notes & Terminal'
+  packageVersion: 1.1.0
+  assetPath: Assets/FuzzyLogicLabs/FuzzyIDE/Runtime/LiveStateTracker.cs
+  uploadId: 1029330

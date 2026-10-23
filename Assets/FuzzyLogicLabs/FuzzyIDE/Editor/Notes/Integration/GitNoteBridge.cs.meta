@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: dc016765f45ee5c419eeb79d9768b5e2
+AssetOrigin:
+  serializedVersion: 1
+  productId: 395140
+  packageName: 'FuzzyIDE: Code Editor, Git, Notes & Terminal'
+  packageVersion: 1.1.0
+  assetPath: Assets/FuzzyLogicLabs/FuzzyIDE/Editor/Notes/Integration/GitNoteBridge.cs
+  uploadId: 1029330

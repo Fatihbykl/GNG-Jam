@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: d3c9e409cc0214e4fb78cbc964d203db
+AssetOrigin:
+  serializedVersion: 1
+  productId: 395140
+  packageName: 'FuzzyIDE: Code Editor, Git, Notes & Terminal'
+  packageVersion: 1.1.0
+  assetPath: Assets/FuzzyLogicLabs/FuzzyIDE/Editor/Terminal/ConPtyHost.cs
+  uploadId: 1029330

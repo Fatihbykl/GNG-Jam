@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: ab20b9eb336a30141a603c0a5334a5c2
+AssetOrigin:
+  serializedVersion: 1
+  productId: 395140
+  packageName: 'FuzzyIDE: Code Editor, Git, Notes & Terminal'
+  packageVersion: 1.1.0
+  assetPath: Assets/FuzzyLogicLabs/FuzzyIDE/Editor/Roslyn/SymbolIndex.cs
+  uploadId: 1029330

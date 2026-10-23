@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: d9617d08829dfc844a8712a4c8f06c7f
+AssetOrigin:
+  serializedVersion: 1
+  productId: 395140
+  packageName: 'FuzzyIDE: Code Editor, Git, Notes & Terminal'
+  packageVersion: 1.1.0
+  assetPath: Assets/FuzzyLogicLabs/FuzzyIDE/Editor/UI/VirtualizedCodeViewer.ScrollMarkers.cs
+  uploadId: 1029330

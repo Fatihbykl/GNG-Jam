@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: dc33994fc3748ba4688273baa4163268
+AssetOrigin:
+  serializedVersion: 1
+  productId: 395140
+  packageName: 'FuzzyIDE: Code Editor, Git, Notes & Terminal'
+  packageVersion: 1.1.0
+  assetPath: Assets/FuzzyLogicLabs/FuzzyIDE/Editor/UI/VirtualizedCodeViewer.Git.cs
+  uploadId: 1029330

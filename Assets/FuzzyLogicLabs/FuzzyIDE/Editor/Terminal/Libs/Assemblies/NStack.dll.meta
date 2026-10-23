@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: a5bb8366c92bd104194a8cf9e0e1a791
+AssetOrigin:
+  serializedVersion: 1
+  productId: 395140
+  packageName: 'FuzzyIDE: Code Editor, Git, Notes & Terminal'
+  packageVersion: 1.1.0
+  assetPath: Assets/FuzzyLogicLabs/FuzzyIDE/Editor/Terminal/Libs/Assemblies/NStack.dll
+  uploadId: 1029330

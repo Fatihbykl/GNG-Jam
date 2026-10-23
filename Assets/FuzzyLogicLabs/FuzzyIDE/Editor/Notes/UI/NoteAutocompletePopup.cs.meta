@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: fe1458919e8e4d443be301db29ccacd1
+AssetOrigin:
+  serializedVersion: 1
+  productId: 395140
+  packageName: 'FuzzyIDE: Code Editor, Git, Notes & Terminal'
+  packageVersion: 1.1.0
+  assetPath: Assets/FuzzyLogicLabs/FuzzyIDE/Editor/Notes/UI/NoteAutocompletePopup.cs
+  uploadId: 1029330

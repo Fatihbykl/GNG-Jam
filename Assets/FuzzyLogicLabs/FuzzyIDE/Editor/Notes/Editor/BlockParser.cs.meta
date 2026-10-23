@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: fd4f280eaad6f5944bf57fdf03bc1c6d
+AssetOrigin:
+  serializedVersion: 1
+  productId: 395140
+  packageName: 'FuzzyIDE: Code Editor, Git, Notes & Terminal'
+  packageVersion: 1.1.0
+  assetPath: Assets/FuzzyLogicLabs/FuzzyIDE/Editor/Notes/Editor/BlockParser.cs
+  uploadId: 1029330

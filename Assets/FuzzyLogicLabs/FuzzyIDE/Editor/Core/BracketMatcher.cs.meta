@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: b74072e27ccede14a8eab09eb90e2cb4
+AssetOrigin:
+  serializedVersion: 1
+  productId: 395140
+  packageName: 'FuzzyIDE: Code Editor, Git, Notes & Terminal'
+  packageVersion: 1.1.0
+  assetPath: Assets/FuzzyLogicLabs/FuzzyIDE/Editor/Core/BracketMatcher.cs
+  uploadId: 1029330

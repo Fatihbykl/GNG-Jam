@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: a0b9b647e162b504985a3e48a1a707c3
+AssetOrigin:
+  serializedVersion: 1
+  productId: 395140
+  packageName: 'FuzzyIDE: Code Editor, Git, Notes & Terminal'
+  packageVersion: 1.1.0
+  assetPath: Assets/FuzzyLogicLabs/FuzzyIDE/Editor/Core/TextFileFormat.cs
+  uploadId: 1029330

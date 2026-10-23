@@ -1,0 +1,36 @@
+{
+    "name": "FuzzyLogicLabs.FuzzyIDE.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:b486be8f8f3a3c843bfe72c1ef733e01"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Microsoft.CodeAnalysis.CSharp.dll",
+        "Microsoft.CodeAnalysis.dll",
+        "System.Reflection.Metadata.dll",
+        "System.Collections.Immutable.dll",
+        "System.Text.Encoding.CodePages.dll",
+        "Microsoft.CodeAnalysis.Workspaces.dll",
+        "Microsoft.CodeAnalysis.CSharp.Workspaces.dll",
+        "Humanizer.dll",
+        "Microsoft.Bcl.AsyncInterfaces.dll",
+        "System.Composition.Hosting.dll",
+        "System.Composition.Runtime.dll",
+        "System.Composition.TypedParts.dll",
+        "System.Threading.Channels.dll",
+        "System.Composition.AttributedModel.dll",
+        "SQLitePCLRaw.core.dll",
+        "Pty.Net.dll",
+        "XtermSharp.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

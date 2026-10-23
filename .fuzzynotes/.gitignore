@@ -1,0 +1,6 @@
+# Fuzzy Notes - Ignore temporary/swap files and trash
+*.swp
+*.tmp
+~*
+recovery.json
+.trash/

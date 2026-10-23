@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: a873faf794b04df41af421554dc6c675
+AssetOrigin:
+  serializedVersion: 1
+  productId: 395140
+  packageName: 'FuzzyIDE: Code Editor, Git, Notes & Terminal'
+  packageVersion: 1.1.0
+  assetPath: Assets/FuzzyLogicLabs/FuzzyIDE/Editor/Terminal/PtyRecorder.cs
+  uploadId: 1029330

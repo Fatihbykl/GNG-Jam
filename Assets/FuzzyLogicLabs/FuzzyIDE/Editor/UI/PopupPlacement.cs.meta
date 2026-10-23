@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 2da142e3b26b0594cae3ff707c33b989
+AssetOrigin:
+  serializedVersion: 1
+  productId: 395140
+  packageName: 'FuzzyIDE: Code Editor, Git, Notes & Terminal'
+  packageVersion: 1.1.0
+  assetPath: Assets/FuzzyLogicLabs/FuzzyIDE/Editor/UI/PopupPlacement.cs
+  uploadId: 1029330

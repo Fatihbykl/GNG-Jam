@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 2b98cc1809dd9e24ca139d2187c59a7e
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 395140
+  packageName: 'FuzzyIDE: Code Editor, Git, Notes & Terminal'
+  packageVersion: 1.1.0
+  assetPath: Assets/FuzzyLogicLabs/FuzzyIDE/Editor/FuzzyLogicLabs.FuzzyIDE.Editor.asmdef
+  uploadId: 1029330

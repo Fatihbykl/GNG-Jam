@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: ceba6266b55b3b44a82c908c98dc469d
+AssetOrigin:
+  serializedVersion: 1
+  productId: 395140
+  packageName: 'FuzzyIDE: Code Editor, Git, Notes & Terminal'
+  packageVersion: 1.1.0
+  assetPath: Assets/FuzzyLogicLabs/FuzzyIDE/Editor/Notes/Core/NoteFileWatcher.cs
+  uploadId: 1029330

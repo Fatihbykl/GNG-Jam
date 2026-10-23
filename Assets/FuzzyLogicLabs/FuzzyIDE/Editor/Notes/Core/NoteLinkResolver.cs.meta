@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 725463945213839428c5ef96f3afe18c
+AssetOrigin:
+  serializedVersion: 1
+  productId: 395140
+  packageName: 'FuzzyIDE: Code Editor, Git, Notes & Terminal'
+  packageVersion: 1.1.0
+  assetPath: Assets/FuzzyLogicLabs/FuzzyIDE/Editor/Notes/Core/NoteLinkResolver.cs
+  uploadId: 1029330

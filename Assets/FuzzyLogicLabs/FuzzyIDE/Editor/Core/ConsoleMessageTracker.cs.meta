@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 668d6d20eb4ea564c8377f32c6b7c76e
+AssetOrigin:
+  serializedVersion: 1
+  productId: 395140
+  packageName: 'FuzzyIDE: Code Editor, Git, Notes & Terminal'
+  packageVersion: 1.1.0
+  assetPath: Assets/FuzzyLogicLabs/FuzzyIDE/Editor/Core/ConsoleMessageTracker.cs
+  uploadId: 1029330

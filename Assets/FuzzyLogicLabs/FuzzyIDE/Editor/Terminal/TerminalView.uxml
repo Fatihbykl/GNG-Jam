@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <ui:VisualElement name="terminal-container">
+        <ui:VisualElement name="tab-bar">
+            <ui:ScrollView name="tab-scroll" mode="Horizontal" />
+            <ui:Button name="btn-new-tab" text="+" tooltip="New Terminal Tab (Shell Selector)" />
+            <ui:Button name="btn-clear-tab" text="⌫" tooltip="Clear Terminal Buffer (Ctrl+K)" />
+            <ui:Button name="btn-restart-tab" text="↻" tooltip="Restart Shell (Kill Current Process Tree)" />
+        </ui:VisualElement>
+        <ui:VisualElement name="terminal-body">
+            <ui:VisualElement name="terminal-viewport" />
+            <ui:Scroller name="terminal-scroller" direction="Vertical" />
+        </ui:VisualElement>
+        <ui:VisualElement name="terminal-status-bar">
+            <ui:Label name="status-shell-info" text="PowerShell" />
+            <ui:VisualElement name="status-spacer" />
+            <ui:Label name="status-size-info" text="80x24" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
+
