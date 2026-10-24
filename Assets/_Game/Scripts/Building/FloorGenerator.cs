@@ -37,7 +37,7 @@ namespace KatKat
             foreach (var c in floor.Columns) occupied.Add(new Vector3(c.WorldCenter.x, 0.45f, c.WorldCenter.z));
 
             BuildRings(floor, cfg, rng, diff.RingAnchors, occupied);
-            BuildItems(floor, rng, diff, floorNumber, occupied);
+            BuildItems(floor, rng, diff, floorNumber, occupied, ItemCatalog.FrictionMaterial(cfg.itemFriction));
             BuildCharges(floor, cfg, rng, columns);
 
             floor.SetSimulated(false);
@@ -172,6 +172,8 @@ namespace KatKat
             wall.LocalOutward = Vector3.forward;
             Fracturable.TryAdd(wall, floor, cfg);
             floor.Walls.Add(wall);
+            wall.SupportColumns.Add(colA);
+            wall.SupportColumns.Add(colB);
             JoinToColumn(wall, colA, cfg);
             JoinToColumn(wall, colB, cfg);
             JoinPieces(wall, tile, cfg);
@@ -191,7 +193,7 @@ namespace KatKat
         }
 
         private static void BuildItems(Floor floor, System.Random rng, FloorDifficulty diff, int floorNumber,
-            List<Vector3> occupied)
+            List<Vector3> occupied, PhysicsMaterial friction)
         {
             var extra = new List<Rigidbody>();
 
@@ -202,7 +204,8 @@ namespace KatKat
                 if (!TryFindSpot(floor.Footprint, rng, radius, occupied, out Vector3 spot)) return;
                 float yaw = rng.Next(0, 4) * 90f;
                 extra.Clear();
-                var item = ItemCatalog.Build(def, floor.transform, new Vector3(spot.x, floor.BaseY, spot.z), yaw, extra);
+                var item = ItemCatalog.Build(def, floor.transform, new Vector3(spot.x, floor.BaseY, spot.z), yaw, extra,
+                    friction);
                 item.Index = floor.Items.Count;
                 floor.Items.Add(item);
                 floor.Bodies.Add(item.Body);

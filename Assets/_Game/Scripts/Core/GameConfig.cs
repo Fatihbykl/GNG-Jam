@@ -42,18 +42,30 @@ namespace KatKat
         public float explosionRadius = 2.5f;
         public float explosionUpward = 0.2f;
         public float ropeBlastPower = 40f;
-        [Tooltip("Şarj yarıçapındaki eşyalara ek yatay savurma (m/s), uzaklıkla azalır.")]
-        public float itemBlastKick = 2.5f;
 
-        [Header("Çöküş eğimi (eşyaları kaydırır)")]
-        [Tooltip("Tam tek yönlü çöküşte eşyalara uygulanan yatay ivme (m/s²). Sürtünmeyi yenmesi için ~6'nın üstünde olmalı.")]
-        public float tiltAccel = 10f;
-        [Tooltip("Zayıf çöküş okunda ivmenin kalan oranı (ok hiç yoksa eğim de yok).")]
-        [Range(0f, 1f)] public float tiltMinShare = 0.55f;
-        [Tooltip("Her şarjdan sonra eğimin süresi (s, ağır çekimde yavaşlar).")]
-        public float tiltDuration = 1.2f;
-        [Tooltip("Büyük (ağır) eşyalar daha az kayar.")]
-        [Range(0f, 1f)] public float tiltBigItemScale = 0.8f;
+        [Header("Çöküş itkisi (eşyaları kaydırır, planlamada tahmin edilir)")]
+        [Tooltip("Patlayan sıranın dibindeki küçük eşyaya uygulanan yatay ivme (m/s²).")]
+        public float pushAccelSmall = 15f;
+        [Tooltip("Büyük eşyaya uygulanan yatay ivme (m/s²). İp yükü ≈ kütle × bu ivme: ince ip ağır eşyada kopmalı.")]
+        public float pushAccelBig = 18f;
+        [Tooltip("Her katta ivmeye eklenen miktar (m/s²).")]
+        public float pushAccelPerFloor = 0.4f;
+        [Tooltip("Her şarjın itki dalgasının süresi (s, ağır çekimde yavaşlar).")]
+        public float pushDuration = 0.4f;
+        [Tooltip("Dalga, patlayan kolonlardan bu uzaklıkta (m) sıfıra iner.")]
+        public float waveRadius = 4.5f;
+        [Tooltip("Çöküş okunun gücü bunun altındaysa eşyalar merkezden dışa (her yöne) saçılır.")]
+        [Range(0f, 1f)] public float pushRadialBelow = 0.08f;
+        [Tooltip("Çöküş okunun gücü bunun üstündeyse eşyalar tamamen ok yönünde kayar.")]
+        [Range(0f, 1f)] public float pushDirectionalAbove = 0.4f;
+        [Tooltip("Eşyaların zemindeki sürtünmesi; tahmin bu değeri kullanır.")]
+        [Range(0f, 1f)] public float itemFriction = 0.4f;
+
+        [Header("Duvar düşüşü (patlama sırasına bağlı)")]
+        [Tooltip("Duvar, dışa bakan yönü çöküş okuyla bu kadar (cos) aynı yöndeyse dışa düşer; değilse içe.")]
+        [Range(-1f, 1f)] public float wallOutwardDot = 0.3f;
+        [Tooltip("Duvarın tepesine verilen devrilme hızı (m/s).")]
+        public float wallFallKick = 2.2f;
 
         [Header("Parçalanma (Cell Fracture modelleri)")]
         [Tooltip("Kırılabilir duvar/tavan bu bağıl hızın (m/s) üstündeki çarpmada parçalanır.")]
@@ -76,6 +88,10 @@ namespace KatKat
         public int startLives = 3;
         public int slowMoCharges = 2;
         public float safeZoneMargin = 1.5f;
+        [Tooltip("Kat cezası bu sınırı aşarsa bir can daha gider.")]
+        public int penaltyLimit = 15;
+        public float penaltyLimitDecreasePerFloor = 0.4f;
+        public int minPenaltyLimit = 8;
 
         [Header("Ağır çekim")]
         public float slowMoScale = 0.15f;

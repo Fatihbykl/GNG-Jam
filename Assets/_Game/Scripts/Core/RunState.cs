@@ -31,11 +31,14 @@ namespace KatKat
         public int RingAnchors;
         public float BaseBudget;
         public float BearingRatio;
+        public int PenaltyLimit;
 
         public static FloorDifficulty For(int floorNumber, GameConfig config)
         {
             return new FloorDifficulty
             {
+                PenaltyLimit = Mathf.Max(config.minPenaltyLimit,
+                    Mathf.RoundToInt(config.penaltyLimit - config.penaltyLimitDecreasePerFloor * floorNumber)),
                 BearingRatio = Mathf.Max(config.minBearingRatio,
                     config.bearingRatio - config.bearingRatioDecreasePerFloor * floorNumber),
                 BigItems = Mathf.Min(1 + floorNumber / 2, 4),

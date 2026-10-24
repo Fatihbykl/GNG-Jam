@@ -39,6 +39,11 @@ namespace KatKat
         public Floor BelowFloor { get; private set; }
         public RopeBudget Budget { get; private set; }
         public FloorResult LastResult { get; private set; }
+        /// <summary>Sonuç ekranındaki eşya başına neden-sonuç satırları.</summary>
+        public List<ItemReport> LastItemReports { get; private set; } = new List<ItemReport>();
+        /// <summary>Patlama sürerken anlık ceza (HUD çubuğu için, kısa aralıklarla yenilenir).</summary>
+        public FloorResult LiveResult { get; private set; }
+        public int PenaltyLimit => FloorDifficulty.For(FloorNumber, Config).PenaltyLimit;
         public int SelectedRopeType { get; private set; }
         public string Message { get; private set; }
         public int FloorNumber => Run.FloorsDescended;
@@ -48,6 +53,7 @@ namespace KatKat
         public SafeZone Zone { get; private set; }
         public DetonationSequence Sequence { get; private set; }
         public CollapsePreview Collapse { get; private set; }
+        public ImpactPreview Impact { get; private set; }
         public CollapseShove Shove { get; private set; }
         public SlowMoDirector SlowMo { get; private set; }
         public RopePlacer Placer { get; private set; }
@@ -61,6 +67,7 @@ namespace KatKat
         private RopePlan _plan = new RopePlan();
         private List<(int index, float delay)> _chargeSetup;
         private float _messageUntil;
+        private float _nextLiveScore;
         private Coroutine _settleRoutine;
         private readonly List<NeighborFacade> _facades = new List<NeighborFacade>();
 
@@ -81,6 +88,8 @@ namespace KatKat
             Sequence.ChargeFiring += OnChargeFiring;
             Collapse = gameObject.AddComponent<CollapsePreview>();
             Collapse.Init(this);
+            Impact = gameObject.AddComponent<ImpactPreview>();
+            Impact.Init(this);
             Shove = gameObject.AddComponent<CollapseShove>();
             SlowMo = gameObject.AddComponent<SlowMoDirector>();
             SlowMo.Init(this);
@@ -161,6 +170,7 @@ namespace KatKat
             _floorStartBudget = budget;
             Ropes.Clear();
             NeighborBuilding.HitBodies.Clear();
+            LiveResult = default;
 
             Sequence.SetCharges(ActiveFloor.Charges);
             if (chargeSetup != null) ApplyChargeSetup(chargeSetup);
@@ -197,8 +207,9 @@ namespace KatKat
             AudioDirector.Play(Sound.Detonate);
             SlowMo.Begin(Config.slowMoCharges);
             Orbit.SetCinematic(true);
-            // Planlamadaki çöküş oku, eşyaların kayacağı yönü belirler
-            Shove.Arm(ActiveFloor, Collapse.HasDirection ? Collapse.Direction : Vector3.zero, Collapse.Strength, Config);
+            // Planlamadaki çöküş oku, eşyaların kayacağı ve duvarların devrileceği yönü belirler
+            Shove.Arm(ActiveFloor, Collapse.HasDirection ? Collapse.Direction : Vector3.zero, Collapse.Strength, FloorNumber,
+                Config);
             Sequence.Play(Config, Visuals.useCustomBlastFx ? null : ExplosionVfxPrefab, () => _settleRoutine = StartCoroutine(SettleRoutine()));
         }
 
@@ -210,7 +221,7 @@ namespace KatKat
         /// <summary>Şarjlı kolon patlarken ona bağlı ipler boşa çıkar.</summary>
         private void OnChargeFiring(ExplosiveCharge charge)
         {
-            Shove.OnChargeFired();
+            Shove.OnChargeFired(charge);
             Orbit.ShakeFrom(charge.LabelPosition, Orbit.ShakeOnCharge);
             SlowMo.HitStop(Visuals.hitStopDuration, Visuals.hitStopScale);
             int released = 0;
@@ -261,7 +272,8 @@ namespace KatKat
 
             SlowMo.End();
             Orbit.SetCinematic(false);
-            LastResult = FloorScorer.Evaluate(ActiveFloor, Zone, NeighborBuilding.HitBodies);
+            LastResult = FloorScorer.Evaluate(ActiveFloor, Zone, NeighborBuilding.HitBodies, PenaltyLimit);
+            LastItemReports = FloorScorer.DescribeItems(ActiveFloor, Zone, Ropes);
             State = GameState.Results;
             _settleRoutine = null;
         }
@@ -508,6 +520,12 @@ namespace KatKat
         private void Update()
         {
             if (Message != null && Time.unscaledTime > _messageUntil) Message = null;
+
+            if ((State == GameState.Detonating || State == GameState.Settling) && Time.unscaledTime >= _nextLiveScore)
+            {
+                _nextLiveScore = Time.unscaledTime + 0.25f;
+                LiveResult = FloorScorer.Evaluate(ActiveFloor, Zone, NeighborBuilding.HitBodies, PenaltyLimit);
+            }
 
             var kb = Keyboard.current;
             if (kb == null) return;

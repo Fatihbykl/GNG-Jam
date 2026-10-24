@@ -25,6 +25,13 @@ namespace KatKat
 
         public Rigidbody Body => _body != null ? _body : _body = GetComponent<Rigidbody>();
         public bool IsTied => _tieCount > 0;
+        /// <summary>Patlamada kopan son ipin türü (sonuç ekranı için).</summary>
+        public string SnappedRope { get; private set; }
+        /// <summary>İpini boşa çıkaran şarj sırasının adı.</summary>
+        public string ReleasedBy { get; private set; }
+
+        public void NoteRopeSnapped(string ropeName) => SnappedRope = ropeName;
+        public void NoteRopeReleased(string chargeLabel) => ReleasedBy = chargeLabel;
 
         private Rigidbody _body;
         private int _tieCount;

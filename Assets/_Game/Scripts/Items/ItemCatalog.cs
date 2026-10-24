@@ -14,9 +14,32 @@ namespace KatKat
             new Color(0.8f, 0.2f, 0.25f), new Color(0.2f, 0.45f, 0.8f), new Color(0.3f, 0.7f, 0.35f)
         };
 
+        private static readonly Dictionary<float, PhysicsMaterial> FrictionMaterials = new Dictionary<float, PhysicsMaterial>();
+
+        /// <summary>
+        /// Tüm eşyaların ortak sürtünme malzemesi. Prefablardan gelen farklı sürtünmeler çöküş tahminini bozmasın diye
+        /// "Minimum" ile birleşir: zeminin sürtünmesi daha yüksek olsa da bu değer geçerli olur.
+        /// </summary>
+        public static PhysicsMaterial FrictionMaterial(float friction)
+        {
+            if (FrictionMaterials.TryGetValue(friction, out var mat) && mat != null) return mat;
+            mat = new PhysicsMaterial("ItemFriction")
+            {
+                dynamicFriction = friction,
+                staticFriction = friction,
+                bounciness = 0f,
+                frictionCombine = PhysicsMaterialCombine.Minimum,
+                bounceCombine = PhysicsMaterialCombine.Minimum
+            };
+            FrictionMaterials[friction] = mat;
+            return mat;
+        }
+
         /// <param name="floorPos">Eşyanın oturacağı zemin noktası.</param>
         /// <param name="extraBodies">Eşyaya bağlı gevşek parçaların Rigidbody'leri buraya eklenir.</param>
-        public static Item Build(ItemDefinitionSO def, Transform parent, Vector3 floorPos, float yaw, List<Rigidbody> extraBodies)
+        /// <param name="friction">Eşyanın collider'larına atanacak malzeme (bkz. <see cref="FrictionMaterial"/>).</param>
+        public static Item Build(ItemDefinitionSO def, Transform parent, Vector3 floorPos, float yaw, List<Rigidbody> extraBodies,
+            PhysicsMaterial friction = null)
         {
             var rotation = Quaternion.Euler(0f, yaw, 0f);
             GameObject go;
@@ -69,6 +92,10 @@ namespace KatKat
             }
 
             item.RefreshRenderers(); // gevşek parçalar ayrıldıktan sonra
+            if (friction != null)
+            {
+                foreach (var col in go.GetComponentsInChildren<Collider>()) col.sharedMaterial = friction;
+            }
             return item;
         }
 
