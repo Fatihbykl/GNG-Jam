@@ -24,6 +24,8 @@ namespace KatKat
         private const float MessageDuration = 2.5f;
 
         public GameConfig Config = new GameConfig();
+        [Tooltip("Işık, gökyüzü, sis ve post-processing. Play sırasında canlı ayarlanır.")]
+        public VisualConfig Visuals = new VisualConfig();
         [Tooltip("Yapı parçalarının ve eşyaların prefabları. Boşsa prototip küpler kullanılır.")]
         public GameContentSO Content;
         public RopeTypeSO[] RopeTypes;
@@ -50,6 +52,7 @@ namespace KatKat
         public SlowMoDirector SlowMo { get; private set; }
         public RopePlacer Placer { get; private set; }
         public OrbitCamera Orbit { get; private set; }
+        public LookDirector Look { get; private set; }
 
         private Transform _world;
         private GameObject _towerBody;
@@ -59,6 +62,7 @@ namespace KatKat
         private List<(int index, float delay)> _chargeSetup;
         private float _messageUntil;
         private Coroutine _settleRoutine;
+        private readonly List<NeighborFacade> _facades = new List<NeighborFacade>();
 
         #region Kurulum
 
@@ -95,8 +99,6 @@ namespace KatKat
                 go.AddComponent<AudioListener>();
             }
 
-            cam.clearFlags = CameraClearFlags.SolidColor;
-            cam.backgroundColor = new Color(0.62f, 0.8f, 0.95f);
             cam.farClipPlane = 500f;
             Orbit = cam.GetComponent<OrbitCamera>();
             if (Orbit == null) Orbit = cam.gameObject.AddComponent<OrbitCamera>();
@@ -104,17 +106,9 @@ namespace KatKat
             if (fader == null) fader = cam.gameObject.AddComponent<WallFader>();
             fader.Init(this);
 
-            if (FindAnyObjectByType<Light>() == null)
-            {
-                var light = new GameObject("Sun").AddComponent<Light>();
-                light.type = LightType.Directional;
-                light.shadows = LightShadows.Soft;
-                light.intensity = 1.2f;
-                light.transform.rotation = Quaternion.Euler(55f, -35f, 0f);
-            }
-
-            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
-            RenderSettings.ambientLight = new Color(0.55f, 0.57f, 0.62f);
+            // Güneş, ortam ışığı, gökyüzü, sis ve post-processing
+            Look = gameObject.AddComponent<LookDirector>();
+            Look.Init(this, cam);
         }
 
         private void Start() => NewRun();
@@ -130,6 +124,7 @@ namespace KatKat
             StopFlow();
             if (_world != null) Destroy(_world.gameObject);
             _world = new GameObject("World").transform;
+            _facades.Clear();
             _towerBody = null;
 
             Run = new RunState(Config, RunSeed != 0 ? RunSeed : Random.Range(1, 99999));
@@ -337,6 +332,7 @@ namespace KatKat
 
             float top = BelowFloor.BaseY;
             _towerBody.transform.position = new Vector3(0f, top - 150f, 0f);
+            foreach (var facade in _facades) facade.Follow(ActiveFloor.BaseY);
         }
 
         private void BuildNeighbors()
@@ -354,6 +350,7 @@ namespace KatKat
             var go = GameMaterials.CreateBox("Neighbor", _world, new Vector3(xz.x, top - height * 0.5f, xz.z),
                 new Vector3(size.x, height, size.z), GameMaterials.NeighborColor);
             go.AddComponent<NeighborBuilding>();
+            _facades.Add(NeighborFacade.Create(_world, new Vector3(xz.x, top, xz.z), size, Config.floorHeight, _facades.Count + 1));
         }
 
         private Vector3 FocusPoint() => new Vector3(0f, ActiveFloor.BaseY + 1f, 0f);
