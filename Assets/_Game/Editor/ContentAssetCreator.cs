@@ -57,6 +57,17 @@ namespace KatKat.Editor
                 () => StructurePrefab("Wall", new Vector3(cfg.cellSize - cfg.columnSize, h, cfg.wallThickness), GameMaterials.WallColor));
             content.CeilingPrefab = Keep(content.CeilingPrefab,
                 () => StructurePrefab("Ceiling", new Vector3(cfg.cellSize, cfg.slabThickness, cfg.cellSize), GameMaterials.Concrete));
+            if (content.WallVariants == null) content.WallVariants = new List<WeightedPrefab>();
+            if (content.WallVariants.Count == 0)
+            {
+                content.WallVariants.Add(new WeightedPrefab
+                {
+                    Prefab = WindowWallPrefab(new Vector3(cfg.cellSize - cfg.columnSize, h, cfg.wallThickness)),
+                    Weight = 1f
+                });
+            }
+            content.FractureInteriorMaterial = Keep(content.FractureInteriorMaterial,
+                () => EnsureMaterial(new Color(0.42f, 0.4f, 0.37f), "M_BrokenConcrete", 0f));
             content.RubblePrefab = Keep(content.RubblePrefab,
                 () => StructurePrefab("Rubble", new Vector3(0.36f, 1.2f, 0.36f), GameMaterials.ColumnColor));
             content.ColumnAnchorPrefab = Keep(content.ColumnAnchorPrefab,
@@ -78,7 +89,34 @@ namespace KatKat.Editor
             return content;
         }
 
-        private static GameObject Keep(GameObject current, System.Func<GameObject> create) => current != null ? current : create();
+        private static T Keep<T>(T current, System.Func<T> create) where T : Object => current != null ? current : create();
+
+        /// <summary>
+        /// Pencereli duvar: pencere boşluğu çevresinde dört blok ve bir cam. Birden çok mesh içerdiği için
+        /// oyunda kırılabilir sayılır; patlamada bloklarına ve camına ayrılır.
+        /// </summary>
+        private static GameObject WindowWallPrefab(Vector3 size)
+        {
+            string path = $"{StructureFolder}/Wall_Window.prefab";
+            var existing = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (existing != null) return existing;
+
+            const float windowW = 1.2f, windowH = 1.2f, sill = 0.9f;
+            float hw = size.x * 0.5f, hh = size.y * 0.5f;
+            float sideW = (size.x - windowW) * 0.5f;
+            float topH = size.y - sill - windowH;
+            float midY = -hh + sill + windowH * 0.5f;
+
+            var root = new GameObject("Wall_Window");
+            var color = GameMaterials.WallColor;
+            AddModel(root.transform, "Sill", PrimitiveType.Cube, new Vector3(0f, -hh + sill * 0.5f, 0f), new Vector3(size.x, sill, size.z), color);
+            AddModel(root.transform, "Lintel", PrimitiveType.Cube, new Vector3(0f, hh - topH * 0.5f, 0f), new Vector3(size.x, topH, size.z), color);
+            AddModel(root.transform, "SideL", PrimitiveType.Cube, new Vector3(-hw + sideW * 0.5f, midY, 0f), new Vector3(sideW, windowH, size.z), color);
+            AddModel(root.transform, "SideR", PrimitiveType.Cube, new Vector3(hw - sideW * 0.5f, midY, 0f), new Vector3(sideW, windowH, size.z), color);
+            AddModel(root.transform, "Glass", PrimitiveType.Cube, new Vector3(0f, midY, 0f), new Vector3(windowW, windowH, size.z * 0.25f),
+                new Color(0.45f, 0.62f, 0.78f));
+            return Save(root, path);
+        }
 
         /// <summary>Kök boş obje + ortalanmış "Model" küpü, gerçek ölçüde. Collider yok: kod modelin sınırlarından ekler.</summary>
         private static GameObject StructurePrefab(string name, Vector3 size, Color color)
@@ -162,16 +200,16 @@ namespace KatKat.Editor
             model.GetComponent<Renderer>().sharedMaterial = EnsureMaterial(color);
         }
 
-        private static Material EnsureMaterial(Color color)
+        private static Material EnsureMaterial(Color color, string name = null, float smoothness = 0.15f)
         {
-            string path = $"{MaterialFolder}/M_{ColorUtility.ToHtmlStringRGB(color)}.mat";
+            string path = $"{MaterialFolder}/{name ?? "M_" + ColorUtility.ToHtmlStringRGB(color)}.mat";
             var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
             if (mat != null) return mat;
 
             var shader = Shader.Find("Universal Render Pipeline/Lit");
             mat = new Material(shader);
             mat.SetColor("_BaseColor", color);
-            if (mat.HasProperty("_Smoothness")) mat.SetFloat("_Smoothness", 0.15f);
+            if (mat.HasProperty("_Smoothness")) mat.SetFloat("_Smoothness", smoothness);
             AssetDatabase.CreateAsset(mat, path);
             return mat;
         }

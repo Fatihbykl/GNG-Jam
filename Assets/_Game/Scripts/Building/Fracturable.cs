@@ -44,7 +44,41 @@ namespace KatKat
             f.ShatterOnImpact = shatterOnImpact;
             f._shards.Clear();
             f._shards.AddRange(shards);
+            if (floor.Content != null) ApplyInteriorMaterial(shards, floor.Content.FractureInteriorMaterial);
             return f;
+        }
+
+        private static readonly string[] InteriorNames = { "interior", "inner", "ic", "iç", "inside" };
+
+        /// <summary>Kırık yüz malzemelerini (adı Interior/Inner/Ic/İç ile başlayan) ortak malzemeyle değiştirir.</summary>
+        private static void ApplyInteriorMaterial(List<MeshFilter> shards, Material interior)
+        {
+            if (interior == null) return;
+            foreach (var mf in shards)
+            {
+                if (!mf.TryGetComponent<Renderer>(out var r)) continue;
+                var mats = r.sharedMaterials;
+                bool changed = false;
+                for (int i = 0; i < mats.Length; i++)
+                {
+                    if (mats[i] == null || !IsInterior(mats[i].name)) continue;
+                    mats[i] = interior;
+                    changed = true;
+                }
+                if (changed) r.sharedMaterials = mats;
+            }
+        }
+
+        private static bool IsInterior(string name)
+        {
+            string n = name.Replace(" (Instance)", "").Trim().ToLowerInvariant();
+            foreach (var key in InteriorNames)
+            {
+                if (!n.StartsWith(key)) continue;
+                // "ic" gibi kısa anahtarlar "icon" ile karışmasın: anahtardan sonra harf gelmemeli
+                if (n.Length == key.Length || !char.IsLetter(n[key.Length])) return true;
+            }
+            return false;
         }
 
         private void OnCollisionEnter(Collision collision)

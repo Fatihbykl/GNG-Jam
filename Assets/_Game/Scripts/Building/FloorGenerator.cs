@@ -165,7 +165,8 @@ namespace KatKat
         {
             if (rng.NextDouble() < cfg.openEdgeChance) return;
 
-            var go = SpawnStructure(floor, floor.Content.WallPrefab, "Wall", pos, Quaternion.LookRotation(outward), size,
+            var prefab = floor.Content.PickWall(rng.NextDouble());
+            var go = SpawnStructure(floor, prefab, "Wall", pos, Quaternion.LookRotation(outward), size,
                 GameMaterials.WallColor);
             var wall = AddPiece(floor, go, PieceKind.Wall, cfg.wallMass, pos, size);
             wall.LocalOutward = Vector3.forward;

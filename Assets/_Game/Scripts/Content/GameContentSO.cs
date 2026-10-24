@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,6 +8,14 @@ namespace KatKat
     /// Oyunun tüm model içeriği tek yerde: yapı parçalarının ve eşyaların prefabları.
     /// Boş bırakılan her alan için prototip küpü kullanılır, yani modeller teker teker eklenebilir.
     /// </summary>
+    /// <summary>Ağırlıklı rastgele seçilen prefab (ör. duvar çeşitleri).</summary>
+    [Serializable]
+    public class WeightedPrefab
+    {
+        public GameObject Prefab;
+        [Min(0f)] public float Weight = 1f;
+    }
+
     [CreateAssetMenu(menuName = "Kat Kat Yıkım/Game Content", fileName = "GameContent")]
     public class GameContentSO : ScriptableObject
     {
@@ -18,6 +27,11 @@ namespace KatKat
         [Tooltip("Dış duvar. Yerel X = duvar boyu, Y = yükseklik, +Z = binanın dışına bakan yüz.\n" +
                  "Cell Fracture modeli: kökün altında 2+ parça mesh varsa kırılabilir olur.")]
         public GameObject WallPrefab;
+        [Tooltip("Düz duvarın (WallPrefab) çeşitler arasındaki ağırlığı.")]
+        [Min(0f)] public float WallPrefabWeight = 2f;
+        [Tooltip("Dış duvar çeşitleri: pencereli, kapılı, balkonlu... Aynı yuvaya ve eksen kurallarına uyar.\n" +
+                 "Her duvar için WallPrefab ile birlikte ağırlığa göre seçilir. Cell Fracture modelleri de olabilir.")]
+        public List<WeightedPrefab> WallVariants = new List<WeightedPrefab>();
         [Tooltip("Tavan döşemesi (bir hücre), aynı zamanda alt katın zemini. Yuva: hücre × döşeme kalınlığı × hücre.\n" +
                  "Cell Fracture modeli: kökün altında 2+ parça mesh varsa kırılabilir olur.")]
         public GameObject CeilingPrefab;
@@ -36,6 +50,9 @@ namespace KatKat
         public Material FadeMaterial;
         [Tooltip("Patlama, toz ve kıvılcım efektleri için URP Particles/Unlit şablonu (M_ParticleTemplate).")]
         public Material ParticleMaterial;
+        [Tooltip("Cell Fracture kırık yüzleri için ortak malzeme. Modeldeki adı Interior/Inner/Ic/İç ile başlayan\n" +
+                 "malzemelerin yerine geçer; böylece tüm kırılan parçalar aynı kırık beton görünümünü alır. Boşsa dokunulmaz.")]
+        public Material FractureInteriorMaterial;
         [Tooltip("Arayüz yazı tipi (isteğe bağlı). Boşsa Unity'nin varsayılan yazı tipi kullanılır.")]
         public Font UiFont;
 
@@ -52,6 +69,36 @@ namespace KatKat
         public List<ItemDefinitionSO> Items = new List<ItemDefinitionSO>();
 
         public GameObject ResolveBearingColumn() => BearingColumnPrefab != null ? BearingColumnPrefab : ColumnPrefab;
+
+        /// <summary>
+        /// <paramref name="roll"/> (0–1) ile düz duvar ya da bir çeşit seçer. Hiç çeşit yoksa WallPrefab döner
+        /// (o da boşsa null → prototip küp).
+        /// </summary>
+        public GameObject PickWall(double roll)
+        {
+            float total = WallPrefab != null ? WallPrefabWeight : 0f;
+            foreach (var v in WallVariants)
+            {
+                if (v != null && v.Prefab != null) total += v.Weight;
+            }
+            if (total <= 0f) return WallPrefab;
+
+            double r = roll * total;
+            if (WallPrefab != null)
+            {
+                r -= WallPrefabWeight;
+                if (r < 0) return WallPrefab;
+            }
+            GameObject last = WallPrefab;
+            foreach (var v in WallVariants)
+            {
+                if (v == null || v.Prefab == null || v.Weight <= 0f) continue;
+                last = v.Prefab;
+                r -= v.Weight;
+                if (r < 0) return v.Prefab;
+            }
+            return last; // kayan nokta yuvarlaması
+        }
 
         /// <summary>Asset atanmamışsa kullanılan, tamamen prototip küplerinden oluşan içerik.</summary>
         public static GameContentSO CreateDefault()
