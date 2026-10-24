@@ -57,17 +57,5 @@ namespace KatKat
             if (!withCollider) Object.Destroy(go.GetComponent<Collider>());
             return go;
         }
-
-        public static Rigidbody AddBody(GameObject go, float mass, bool continuous = false)
-        {
-            var rb = go.AddComponent<Rigidbody>();
-            rb.mass = mass;
-            rb.interpolation = RigidbodyInterpolation.Interpolate;
-            rb.collisionDetectionMode = continuous
-                ? CollisionDetectionMode.ContinuousDynamic
-                : CollisionDetectionMode.Discrete;
-            rb.isKinematic = true;
-            return rb;
-        }
     }
 }

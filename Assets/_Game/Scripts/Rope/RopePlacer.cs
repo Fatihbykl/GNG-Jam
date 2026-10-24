@@ -215,8 +215,8 @@ namespace KatKat
 
             foreach (var h in _hits)
             {
-                var r = h.collider.GetComponent<Renderer>();
-                if (r != null && r.shadowCastingMode == ShadowCastingMode.ShadowsOnly) continue;
+                var piece = h.collider.GetComponentInParent<StructuralPiece>();
+                if (piece != null && piece.IsCutaway) continue;
                 if (h.collider.isTrigger && h.collider.GetComponent<AnchorPoint>() == null) continue;
                 result = h;
                 return true;

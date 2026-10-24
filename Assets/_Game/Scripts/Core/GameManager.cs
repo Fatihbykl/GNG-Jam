@@ -24,6 +24,8 @@ namespace KatKat
         private const float MessageDuration = 2.5f;
 
         public GameConfig Config = new GameConfig();
+        [Tooltip("Yapı parçalarının ve eşyaların prefabları. Boşsa prototip küpler kullanılır.")]
+        public GameContentSO Content;
         public RopeTypeSO[] RopeTypes;
         public GameObject ExplosionVfxPrefab;
         [Tooltip("0 = her oyunda rastgele.")]
@@ -62,6 +64,7 @@ namespace KatKat
         private void Awake()
         {
             if (RopeTypes == null || RopeTypes.Length == 0) RopeTypes = RopeTypeSO.CreateDefaults();
+            if (Content == null) Content = GameContentSO.CreateDefault();
 
             Physics.defaultSolverIterations = 12;
             Physics.defaultSolverVelocityIterations = 4;
@@ -140,7 +143,8 @@ namespace KatKat
 
         private Floor BuildFloor(int index)
         {
-            return FloorGenerator.Build(_world, index, index, Run.FloorSeed(index), -index * Config.floorHeight, Config);
+            return FloorGenerator.Build(_world, index, index, Run.FloorSeed(index), -index * Config.floorHeight, Config,
+                Content);
         }
 
         private void BeginFloor(float budget, RopePlan replay, List<(int index, float delay)> chargeSetup)

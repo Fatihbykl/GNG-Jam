@@ -37,6 +37,7 @@ namespace KatKat.Editor
 
             var gm = new GameObject("Game").AddComponent<GameManager>();
             gm.RopeTypes = EnsureRopeTypeAssets();
+            gm.Content = ContentAssetCreator.EnsureContent();
             gm.ExplosionVfxPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(VfxPath);
 
             Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));

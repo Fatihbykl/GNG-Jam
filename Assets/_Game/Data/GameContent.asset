@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 152380c062543b746ba6ab69a01daeb3, type: 3}
+  m_Name: GameContent
+  m_EditorClassIdentifier: 
+  ColumnPrefab: {fileID: 8523072223473190041, guid: 628e71ca9bc0cf5478b5c2e2cf8bbef5, type: 3}
+  BearingColumnPrefab: {fileID: 8730785699733014958, guid: 4909dbe8445413843b4940ed6971098d, type: 3}
+  WallPrefab: {fileID: 9218598344423901948, guid: 30bbdc979949d6c4f81d8c2c161bc45b, type: 3}
+  CeilingPrefab: {fileID: 8970670169747496822, guid: 3aecbb7a0ad1308488d7e3d790d39efb, type: 3}
+  RubblePrefab: {fileID: 7808480193478641594, guid: 9beee7fdc091f5f4489af07695acb6da, type: 3}
+  ColumnAnchorPrefab: {fileID: 8479085579402387634, guid: 3ec0d151a476781419f67e6dd914d6c9, type: 3}
+  FloorRingPrefab: {fileID: 5452616181484888971, guid: d621858b170f37d478b547e553177cd4, type: 3}
+  ChargeMarkerPrefab: {fileID: 2411810382320939322, guid: 04f4b88b9a615b043968f091a340abe4, type: 3}
+  FitStructureToSlot: 1
+  Items:
+  - {fileID: 11400000, guid: 087ecba598f10774f8500ed37079faf4, type: 2}
+  - {fileID: 11400000, guid: a171b3f60f8930f4b851f7e02873fe99, type: 2}
+  - {fileID: 11400000, guid: dd5a70d7cd8bf344db10772473003e24, type: 2}
+  - {fileID: 11400000, guid: 5f2b4153f58ebb44bb048d58cfd069b8, type: 2}

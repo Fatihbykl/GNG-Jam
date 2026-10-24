@@ -82,7 +82,7 @@ namespace KatKat
             foreach (var column in floor.Columns)
             {
                 if (column == null) continue;
-                var p = column.transform.position;
+                var p = column.WorldCenter;
                 var offset = new Vector2(p.x - center.x, p.z - center.y);
                 if (column.IsBearing) _bearing.Add(offset);
                 else if (column.Charge != null) _charged.Add((offset, _gm.Sequence.FireTimeOf(column.Charge)));

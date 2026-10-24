@@ -3,103 +3,112 @@ using UnityEngine;
 
 namespace KatKat
 {
-    public enum ItemType
-    {
-        Fridge,
-        Bookshelf,
-        Crate,
-        Lamp
-    }
-
     /// <summary>
-    /// Prototip eşyaları primitiflerden kurar. Gerçek modeller (Kenney/Quaternius) gelince
-    /// burası prefab örnekleyen bir yapıya döner.
+    /// Eşyayı tanımından kurar. Prefab varsa onu örnekler ve eksik oyun bileşenlerini tamamlar;
+    /// yoksa tanımdaki yedek kutuyu oluşturur.
     /// </summary>
     public static class ItemCatalog
     {
-        public static readonly ItemType[] BigTypes = { ItemType.Fridge, ItemType.Bookshelf };
-        public static readonly ItemType[] SmallTypes = { ItemType.Crate, ItemType.Lamp };
-
-        public static float FootprintRadius(ItemType type)
+        private static readonly Color[] LoosePartColors =
         {
-            switch (type)
-            {
-                case ItemType.Fridge: return 0.65f;
-                case ItemType.Bookshelf: return 0.8f;
-                case ItemType.Crate: return 0.45f;
-                default: return 0.3f;
-            }
-        }
+            new Color(0.8f, 0.2f, 0.25f), new Color(0.2f, 0.45f, 0.8f), new Color(0.3f, 0.7f, 0.35f)
+        };
 
         /// <param name="floorPos">Eşyanın oturacağı zemin noktası.</param>
-        /// <param name="extraBodies">Eşyaya bağlı ek Rigidbody'ler (ör. kitaplar) buraya eklenir.</param>
-        public static Item Build(ItemType type, Transform parent, Vector3 floorPos, float yaw, List<Rigidbody> extraBodies)
+        /// <param name="extraBodies">Eşyaya bağlı gevşek parçaların Rigidbody'leri buraya eklenir.</param>
+        public static Item Build(ItemDefinitionSO def, Transform parent, Vector3 floorPos, float yaw, List<Rigidbody> extraBodies)
         {
-            switch (type)
-            {
-                case ItemType.Fridge:
-                {
-                    var item = CreateItem("Buzdolabı", type, ItemSize.Big, parent, floorPos, yaw,
-                        new Vector3(0.8f, 1.8f, 0.7f), new Color(0.92f, 0.95f, 0.98f), 90f);
-                    Detail(item.transform, new Vector3(0.3f, 0.2f, 0.52f), new Vector3(0.05f, 0.3f, 0.05f), Color.gray);
-                    return item;
-                }
-                case ItemType.Bookshelf:
-                {
-                    var item = CreateItem("Kitaplık", type, ItemSize.Big, parent, floorPos, yaw,
-                        new Vector3(1.2f, 1.9f, 0.4f), new Color(0.55f, 0.35f, 0.2f), 40f);
-                    AddBooks(item, extraBodies);
-                    return item;
-                }
-                case ItemType.Crate:
-                    return CreateItem("Koli", type, ItemSize.Small, parent, floorPos, yaw,
-                        new Vector3(0.5f, 0.5f, 0.5f), new Color(0.85f, 0.65f, 0.35f), 8f);
-                default:
-                    return CreateItem("Lamba", type, ItemSize.Small, parent, floorPos, yaw,
-                        new Vector3(0.3f, 0.6f, 0.3f), new Color(0.3f, 0.75f, 0.85f), 4f);
-            }
-        }
+            var rotation = Quaternion.Euler(0f, yaw, 0f);
+            GameObject go;
+            var looseParts = new List<Transform>();
 
-        private static Item CreateItem(string name, ItemType type, ItemSize size, Transform parent, Vector3 floorPos,
-            float yaw, Vector3 dims, Color color, float mass)
-        {
-            var go = GameMaterials.CreateBox(name, parent, floorPos + Vector3.up * (dims.y * 0.5f + 0.01f), dims, color);
-            go.transform.rotation = Quaternion.Euler(0f, yaw, 0f);
-            GameMaterials.AddBody(go, mass, continuous: true);
-            var item = go.AddComponent<Item>();
-            item.DisplayName = name;
-            item.Type = type;
-            item.Size = size;
+            if (def.Prefab != null)
+            {
+                // Kendi Rigidbody'si olan alt objeler gevşek parçadır; kökün sınırlarına ve collider'ına katılmazlar.
+                go = PrefabPlacement.PlaceOnFloor(def.Prefab, def.DisplayName, parent, floorPos, rotation, out _);
+                foreach (var rb in go.GetComponentsInChildren<Rigidbody>(true))
+                {
+                    if (rb.gameObject != go) looseParts.Add(rb.transform);
+                }
+
+                if (looseParts.Count > 0)
+                {
+                    // Gevşek parçalar hariç yeniden ölç ve kökü tekrar zemine oturt.
+                    var b = PrefabPlacement.MeasureLocal(go.transform, looseParts);
+                    var pivotOffset = new Vector3(b.center.x, b.min.y, b.center.z);
+                    go.transform.position = floorPos + Vector3.up * 0.01f - rotation * pivotOffset;
+                    PrefabPlacement.EnsureCollider(go, b, looseParts);
+                }
+                else
+                {
+                    PrefabPlacement.EnsureCollider(go, PrefabPlacement.MeasureLocal(go.transform), null);
+                }
+            }
+            else
+            {
+                var size = def.FallbackSize;
+                go = GameMaterials.CreateBox(def.DisplayName, parent, floorPos + Vector3.up * (size.y * 0.5f + 0.01f), size,
+                    def.FallbackColor);
+                go.transform.rotation = rotation;
+            }
+
+            var body = PrefabPlacement.EnsureBody(go, def.Mass, continuous: true);
+            var item = PrefabPlacement.GetOrAdd<Item>(go);
+            item.Definition = def;
+            item.DisplayName = def.DisplayName;
+            item.Size = def.Size;
+            item.CanBeTied = def.CanBeTied;
+
+            if (def.Prefab != null)
+            {
+                foreach (var part in looseParts) AttachLoosePart(part, body, parent, def, extraBodies);
+            }
+            else
+            {
+                AddFallbackLooseParts(go, body, parent, def, extraBodies);
+            }
+
+            item.RefreshRenderers(); // gevşek parçalar ayrıldıktan sonra
             return item;
         }
 
-        private static void Detail(Transform item, Vector3 localPos, Vector3 worldSize, Color color)
+        private static void AttachLoosePart(Transform part, Rigidbody owner, Transform parent, ItemDefinitionSO def,
+            List<Rigidbody> extraBodies)
         {
-            var go = GameMaterials.CreateBox("Detail", item, item.TransformPoint(localPos), Vector3.one, color, false);
-            go.transform.rotation = item.rotation;
-            var s = item.lossyScale;
-            go.transform.localScale = new Vector3(worldSize.x / s.x, worldSize.y / s.y, worldSize.z / s.z);
+            part.SetParent(parent, true);
+            var rb = PrefabPlacement.EnsureBody(part.gameObject, part.GetComponent<Rigidbody>().mass, continuous: true);
+            PrefabPlacement.EnsureCollider(part.gameObject, PrefabPlacement.MeasureLocal(part), null);
+
+            var joint = part.gameObject.AddComponent<FixedJoint>();
+            joint.connectedBody = owner;
+            joint.breakForce = def.LoosePartBreakForce;
+            joint.breakTorque = def.LoosePartBreakTorque;
+            extraBodies.Add(rb);
         }
 
-        private static void AddBooks(Item shelf, List<Rigidbody> extraBodies)
+        /// <summary>Prefab yokken kutunun üstüne sıralanan küçük kutular (ör. kitaplıktaki kitaplar).</summary>
+        private static void AddFallbackLooseParts(GameObject owner, Rigidbody ownerBody, Transform parent,
+            ItemDefinitionSO def, List<Rigidbody> extraBodies)
         {
-            var shelfRb = shelf.GetComponent<Rigidbody>();
-            float top = shelf.transform.position.y + shelf.transform.lossyScale.y * 0.5f;
-            Color[] colors = { new Color(0.8f, 0.2f, 0.25f), new Color(0.2f, 0.45f, 0.8f), new Color(0.3f, 0.7f, 0.35f) };
+            if (def.FallbackLooseParts <= 0) return;
 
-            for (int i = 0; i < 3; i++)
+            var t = owner.transform;
+            float top = t.position.y + def.FallbackSize.y * 0.5f;
+            float spacing = def.FallbackSize.x / def.FallbackLooseParts;
+            var partSize = new Vector3(Mathf.Min(0.22f, spacing * 0.8f), 0.3f, Mathf.Min(0.28f, def.FallbackSize.z * 0.9f));
+
+            for (int i = 0; i < def.FallbackLooseParts; i++)
             {
-                Vector3 local = new Vector3((i - 1) * 0.32f, 0f, 0f);
-                Vector3 pos = shelf.transform.position + shelf.transform.rotation * local;
-                pos.y = top + 0.16f;
-                var book = GameMaterials.CreateBox("Kitap", shelf.transform.parent, pos, new Vector3(0.22f, 0.3f, 0.28f),
-                    colors[i]);
-                book.transform.rotation = shelf.transform.rotation;
-                var rb = GameMaterials.AddBody(book, 1.5f, continuous: true);
-                var joint = book.AddComponent<FixedJoint>();
-                joint.connectedBody = shelfRb;
-                joint.breakForce = 120f;
-                joint.breakTorque = 60f;
+                float x = (i - (def.FallbackLooseParts - 1) * 0.5f) * spacing;
+                Vector3 pos = t.position + t.rotation * new Vector3(x, 0f, 0f);
+                pos.y = top + partSize.y * 0.5f + 0.01f;
+                var part = GameMaterials.CreateBox("Parça", parent, pos, partSize, LoosePartColors[i % LoosePartColors.Length]);
+                part.transform.rotation = t.rotation;
+                var rb = PrefabPlacement.EnsureBody(part, def.LoosePartMass, continuous: true);
+                var joint = part.AddComponent<FixedJoint>();
+                joint.connectedBody = ownerBody;
+                joint.breakForce = def.LoosePartBreakForce;
+                joint.breakTorque = def.LoosePartBreakTorque;
                 extraBodies.Add(rb);
             }
         }

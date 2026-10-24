@@ -6,14 +6,16 @@ namespace KatKat
     /// <summary>
     /// Seed'den bir kat üretir: kolon ızgarası, tavan döşemeleri, dış duvarlar, zemin halkaları,
     /// eşyalar ve kolon sıralarına bağlı patlayıcılar. Aynı seed her zaman aynı katı verir;
-    /// hızlı sıfırlama buna dayanıyor.
+    /// hızlı sıfırlama buna dayanıyor. Parçalar <see cref="GameContentSO"/> prefablarından kurulur;
+    /// prefab atanmamış parçalar için prototip küpü kullanılır.
     /// </summary>
     public static class FloorGenerator
     {
         private const float EdgeInset = 0.6f;
         private const float RingRadius = 0.3f;
 
-        public static Floor Build(Transform parent, int index, int floorNumber, int seed, float baseY, GameConfig cfg)
+        public static Floor Build(Transform parent, int index, int floorNumber, int seed, float baseY, GameConfig cfg,
+            GameContentSO content)
         {
             var rng = new System.Random(seed);
             var diff = FloorDifficulty.For(floorNumber, cfg);
@@ -24,6 +26,7 @@ namespace KatKat
             floor.Index = index;
             floor.Seed = seed;
             floor.BaseY = baseY;
+            floor.Content = content;
             floor.Footprint = new Rect(-cfg.FloorWidth * 0.5f, -cfg.FloorDepth * 0.5f, cfg.FloorWidth, cfg.FloorDepth);
 
             var columns = BuildColumns(floor, cfg, PickBearing(cfg, rng, diff.BearingRatio));
@@ -31,10 +34,10 @@ namespace KatKat
             BuildWalls(floor, cfg, columns, rng);
 
             var occupied = new List<Vector3>(); // xz + yarıçap (y bileşeninde)
-            foreach (var c in floor.Columns) occupied.Add(new Vector3(c.transform.position.x, 0.45f, c.transform.position.z));
+            foreach (var c in floor.Columns) occupied.Add(new Vector3(c.WorldCenter.x, 0.45f, c.WorldCenter.z));
 
             BuildRings(floor, cfg, rng, diff.RingAnchors, occupied);
-            BuildItems(floor, rng, diff, occupied);
+            BuildItems(floor, rng, diff, floorNumber, occupied);
             BuildCharges(floor, cfg, rng, columns);
 
             floor.SetSimulated(false);
@@ -72,10 +75,13 @@ namespace KatKat
             {
                 bool isBearing = bearing[i, j];
                 var pos = new Vector3(fp.xMin + i * cfg.cellSize, floor.BaseY + h * 0.5f, fp.yMin + j * cfg.cellSize);
-                var go = GameMaterials.CreateBox(isBearing ? $"BearingColumn_{i}_{j}" : $"Column_{i}_{j}",
-                    floor.transform, pos, new Vector3(cfg.columnSize, h, cfg.columnSize),
-                    isBearing ? GameMaterials.BearingColumnColor : GameMaterials.ColumnColor);
-                var piece = AddPiece(floor, go, PieceKind.Column, cfg.columnMass);
+                var slot = new Vector3(cfg.columnSize, h, cfg.columnSize);
+                var content = floor.Content;
+                var prefab = isBearing ? content.ResolveBearingColumn() : content.ColumnPrefab;
+                var go = SpawnStructure(floor, prefab, isBearing ? $"BearingColumn_{i}_{j}" : $"Column_{i}_{j}", pos,
+                    Quaternion.identity, slot, isBearing ? GameMaterials.BearingColumnColor : GameMaterials.ColumnColor);
+                if (isBearing && prefab != null && content.BearingColumnPrefab == null) TintBearing(go);
+                var piece = AddPiece(floor, go, PieceKind.Column, cfg.columnMass, pos, slot);
                 piece.IsBearing = isBearing;
                 grid[i, j] = piece;
                 floor.Columns.Add(piece);
@@ -87,7 +93,8 @@ namespace KatKat
                 // İç tarafa bakan ankraj
                 Vector3 inward = new Vector3(center.x - pos.x, 0f, center.y - pos.z).normalized;
                 Vector3 anchorPos = new Vector3(pos.x, floor.BaseY + 1.2f, pos.z) + inward * (cfg.columnSize * 0.5f + 0.08f);
-                var anchor = AnchorPoint.Create(AnchorKind.Column, go.transform, anchorPos, floor.Anchors.Count);
+                var anchor = AnchorPoint.Create(AnchorKind.Column, go.transform, anchorPos, Quaternion.LookRotation(inward),
+                    floor.Anchors.Count, floor.Content.ColumnAnchorPrefab);
                 floor.Anchors.Add(anchor);
             }
 
@@ -104,9 +111,10 @@ namespace KatKat
             for (int j = 0; j < cfg.gridZ; j++)
             {
                 var pos = new Vector3(fp.xMin + (i + 0.5f) * cfg.cellSize, y, fp.yMin + (j + 0.5f) * cfg.cellSize);
-                var go = GameMaterials.CreateBox($"Ceiling_{i}_{j}", floor.transform, pos,
+                var go = SpawnStructure(floor, floor.Content.CeilingPrefab, $"Ceiling_{i}_{j}", pos, Quaternion.identity,
                     new Vector3(cfg.cellSize, cfg.slabThickness, cfg.cellSize), GameMaterials.Concrete);
-                var tile = AddPiece(floor, go, PieceKind.Ceiling, cfg.slabMass);
+                var tile = AddPiece(floor, go, PieceKind.Ceiling, cfg.slabMass, pos,
+                    new Vector3(cfg.cellSize, cfg.slabThickness, cfg.cellSize));
                 tiles[i, j] = tile;
                 floor.CeilingTiles.Add(tile);
 
@@ -125,25 +133,22 @@ namespace KatKat
             float h = cfg.floorHeight - cfg.slabThickness;
             float len = cfg.cellSize - cfg.columnSize;
             float y = floor.BaseY + h * 0.5f;
+            var size = new Vector3(len, h, cfg.wallThickness); // yerel: X boy, Y yükseklik, Z kalınlık (+Z dışarı)
 
             // X yönündeki kenarlar (ön ve arka)
             for (int i = 0; i < cfg.gridX; i++)
             {
                 float x = fp.xMin + (i + 0.5f) * cfg.cellSize;
-                TryWall(floor, cfg, rng, new Vector3(x, y, fp.yMin), new Vector3(len, h, cfg.wallThickness),
-                    Vector3.back, columns[i, 0], columns[i + 1, 0], FindTile(floor, i, 0, cfg));
-                TryWall(floor, cfg, rng, new Vector3(x, y, fp.yMax), new Vector3(len, h, cfg.wallThickness),
-                    Vector3.forward, columns[i, cfg.gridZ], columns[i + 1, cfg.gridZ], FindTile(floor, i, cfg.gridZ - 1, cfg));
+                TryWall(floor, cfg, rng, new Vector3(x, y, fp.yMin), size, Vector3.back, columns[i, 0], columns[i + 1, 0], FindTile(floor, i, 0, cfg));
+                TryWall(floor, cfg, rng, new Vector3(x, y, fp.yMax), size, Vector3.forward, columns[i, cfg.gridZ], columns[i + 1, cfg.gridZ], FindTile(floor, i, cfg.gridZ - 1, cfg));
             }
 
             // Z yönündeki kenarlar (sol ve sağ)
             for (int j = 0; j < cfg.gridZ; j++)
             {
                 float z = fp.yMin + (j + 0.5f) * cfg.cellSize;
-                TryWall(floor, cfg, rng, new Vector3(fp.xMin, y, z), new Vector3(cfg.wallThickness, h, len),
-                    Vector3.left, columns[0, j], columns[0, j + 1], FindTile(floor, 0, j, cfg));
-                TryWall(floor, cfg, rng, new Vector3(fp.xMax, y, z), new Vector3(cfg.wallThickness, h, len),
-                    Vector3.right, columns[cfg.gridX, j], columns[cfg.gridX, j + 1], FindTile(floor, cfg.gridX - 1, j, cfg));
+                TryWall(floor, cfg, rng, new Vector3(fp.xMin, y, z), size, Vector3.left, columns[0, j], columns[0, j + 1], FindTile(floor, 0, j, cfg));
+                TryWall(floor, cfg, rng, new Vector3(fp.xMax, y, z), size, Vector3.right, columns[cfg.gridX, j], columns[cfg.gridX, j + 1], FindTile(floor, cfg.gridX - 1, j, cfg));
             }
         }
 
@@ -157,9 +162,10 @@ namespace KatKat
         {
             if (rng.NextDouble() < cfg.openEdgeChance) return;
 
-            var go = GameMaterials.CreateBox("Wall", floor.transform, pos, size, GameMaterials.WallColor);
-            var wall = AddPiece(floor, go, PieceKind.Wall, cfg.wallMass);
-            wall.LocalOutward = outward;
+            var go = SpawnStructure(floor, floor.Content.WallPrefab, "Wall", pos, Quaternion.LookRotation(outward), size,
+                GameMaterials.WallColor);
+            var wall = AddPiece(floor, go, PieceKind.Wall, cfg.wallMass, pos, size);
+            wall.LocalOutward = Vector3.forward;
             floor.Walls.Add(wall);
             JoinToColumn(wall, colA, cfg);
             JoinToColumn(wall, colB, cfg);
@@ -173,30 +179,34 @@ namespace KatKat
             {
                 if (!TryFindSpot(fp, rng, RingRadius, occupied, out Vector3 spot)) continue;
                 var anchor = AnchorPoint.Create(AnchorKind.FloorRing, floor.transform,
-                    new Vector3(spot.x, floor.BaseY + 0.08f, spot.z), floor.Anchors.Count);
+                    new Vector3(spot.x, floor.BaseY + 0.08f, spot.z), Quaternion.identity, floor.Anchors.Count,
+                    floor.Content.FloorRingPrefab);
                 floor.Anchors.Add(anchor);
             }
         }
 
-        private static void BuildItems(Floor floor, System.Random rng, FloorDifficulty diff, List<Vector3> occupied)
+        private static void BuildItems(Floor floor, System.Random rng, FloorDifficulty diff, int floorNumber,
+            List<Vector3> occupied)
         {
             var extra = new List<Rigidbody>();
 
-            void Spawn(ItemType type)
+            void Spawn(ItemDefinitionSO def)
             {
-                float radius = ItemCatalog.FootprintRadius(type);
+                if (def == null) return;
+                float radius = def.ResolveFootprintRadius();
                 if (!TryFindSpot(floor.Footprint, rng, radius, occupied, out Vector3 spot)) return;
                 float yaw = rng.Next(0, 4) * 90f;
                 extra.Clear();
-                var item = ItemCatalog.Build(type, floor.transform, new Vector3(spot.x, floor.BaseY, spot.z), yaw, extra);
+                var item = ItemCatalog.Build(def, floor.transform, new Vector3(spot.x, floor.BaseY, spot.z), yaw, extra);
                 item.Index = floor.Items.Count;
                 floor.Items.Add(item);
                 floor.Bodies.Add(item.Body);
                 floor.Bodies.AddRange(extra);
             }
 
-            for (int i = 0; i < diff.BigItems; i++) Spawn(ItemCatalog.BigTypes[rng.Next(ItemCatalog.BigTypes.Length)]);
-            for (int i = 0; i < diff.SmallItems; i++) Spawn(ItemCatalog.SmallTypes[rng.Next(ItemCatalog.SmallTypes.Length)]);
+            var content = floor.Content;
+            for (int i = 0; i < diff.BigItems; i++) Spawn(content.Pick(ItemSize.Big, floorNumber, rng));
+            for (int i = 0; i < diff.SmallItems; i++) Spawn(content.Pick(ItemSize.Small, floorNumber, rng));
         }
 
         private static void BuildCharges(Floor floor, GameConfig cfg, System.Random rng, StructuralPiece[,] columns)
@@ -223,7 +233,7 @@ namespace KatKat
                 charge.Floor = floor;
                 foreach (var column in charged)
                 {
-                    charge.AddColumn(column);
+                    charge.AddColumn(column, floor.Content.ChargeMarkerPrefab);
                     column.Charge = charge;
                 }
                 floor.Charges.Add(charge);
@@ -257,14 +267,42 @@ namespace KatKat
             return false;
         }
 
-        private static StructuralPiece AddPiece(Floor floor, GameObject go, PieceKind kind, float mass)
+        private static StructuralPiece AddPiece(Floor floor, GameObject go, PieceKind kind, float mass, Vector3 slotCenter,
+            Vector3 slotSize)
         {
-            var rb = GameMaterials.AddBody(go, mass);
-            var piece = go.AddComponent<StructuralPiece>();
+            var rb = PrefabPlacement.EnsureBody(go, mass, continuous: false);
+            var piece = PrefabPlacement.GetOrAdd<StructuralPiece>(go);
             piece.Kind = kind;
+            piece.SlotSize = slotSize;
+            piece.LocalCenter = go.transform.InverseTransformPoint(slotCenter);
             floor.Pieces.Add(piece);
             floor.Bodies.Add(rb);
             return piece;
+        }
+
+        private static GameObject SpawnStructure(Floor floor, GameObject prefab, string name, Vector3 center,
+            Quaternion rotation, Vector3 size, Color fallbackColor)
+        {
+            if (prefab != null)
+                return PrefabPlacement.Place(prefab, name, floor.transform, center, rotation, size, floor.Content.FitStructureToSlot);
+
+            var go = GameMaterials.CreateBox(name, floor.transform, center, size, fallbackColor);
+            go.transform.rotation = rotation;
+            return go;
+        }
+
+        /// <summary>Ayrı taşıyıcı prefabı yoksa normal kolon modelini koyu renge boyar.</summary>
+        private static void TintBearing(GameObject go)
+        {
+            int baseColor = Shader.PropertyToID("_BaseColor");
+            var tint = new Color(0.45f, 0.55f, 0.8f);
+            foreach (var r in go.GetComponentsInChildren<Renderer>())
+            {
+                foreach (var m in r.materials)
+                {
+                    if (m.HasProperty(baseColor)) m.SetColor(baseColor, m.GetColor(baseColor) * tint);
+                }
+            }
         }
 
         private static void JoinPieces(StructuralPiece a, StructuralPiece b, GameConfig cfg)

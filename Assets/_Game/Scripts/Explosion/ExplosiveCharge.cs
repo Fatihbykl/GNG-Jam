@@ -31,21 +31,29 @@ namespace KatKat
                 foreach (var c in Columns)
                 {
                     if (c == null) continue;
-                    sum += c.transform.position;
+                    sum += c.WorldCenter;
                     n++;
                 }
                 return n > 0 ? sum / n + Vector3.up * 1.2f : transform.position;
             }
         }
 
-        public void AddColumn(StructuralPiece column)
+        /// <param name="markerPrefab">Kolona takılan patlayıcı modeli (isteğe bağlı).</param>
+        public void AddColumn(StructuralPiece column, GameObject markerPrefab)
         {
             Columns.Add(column);
-            var marker = GameMaterials.CreateBox("Charge", column.transform, column.transform.position, Vector3.one,
-                GameMaterials.ChargeColor, false);
-            var s = column.transform.lossyScale;
-            marker.transform.localScale = new Vector3(0.5f / s.x, 0.35f / s.y, 0.5f / s.z);
-            marker.transform.localPosition = new Vector3(0f, -0.25f, 0f);
+            Vector3 pos = column.WorldCenter + Vector3.down * (column.SlotSize.y * 0.25f);
+            GameObject marker;
+            if (markerPrefab != null)
+            {
+                marker = PrefabPlacement.SpawnVisual(markerPrefab, "Charge", column.transform, pos, column.transform.rotation);
+            }
+            else
+            {
+                var size = new Vector3(column.SlotSize.x * 1.25f, 0.35f, column.SlotSize.z * 1.25f);
+                marker = GameMaterials.CreateBox("Charge", null, pos, size, GameMaterials.ChargeColor, false);
+                marker.transform.SetParent(column.transform, true);
+            }
             _markers.Add(marker);
         }
 
@@ -65,7 +73,7 @@ namespace KatKat
             foreach (var column in Columns)
             {
                 if (column == null) continue;
-                Vector3 pos = column.transform.position;
+                Vector3 pos = column.WorldCenter;
                 SpawnVfx(vfxPrefab, pos);
                 Cut(column);
 
@@ -94,16 +102,26 @@ namespace KatKat
             column.DetachAll();
 
             var t = column.transform;
-            Vector3 size = t.lossyScale;
+            Vector3 size = column.SlotSize;
+            Vector3 center = column.WorldCenter;
             float mass = column.Body.mass * RubbleMassShare;
             Vector3 chunk = new Vector3(size.x * 0.9f, size.y * 0.45f, size.z * 0.9f);
+            var rubblePrefab = Floor != null && Floor.Content != null ? Floor.Content.RubblePrefab : null;
 
             for (int i = 0; i < 2; i++)
             {
-                Vector3 p = t.position + Vector3.up * (i == 0 ? -size.y * 0.25f : size.y * 0.25f);
-                var go = GameMaterials.CreateBox("Rubble", t.parent, p, chunk, GameMaterials.ColumnColor);
-                go.transform.rotation = t.rotation;
-                var rb = GameMaterials.AddBody(go, mass);
+                Vector3 p = center + t.up * (i == 0 ? -size.y * 0.25f : size.y * 0.25f);
+                GameObject go;
+                if (rubblePrefab != null)
+                {
+                    go = PrefabPlacement.Place(rubblePrefab, "Rubble", t.parent, p, t.rotation, chunk, fit: true);
+                }
+                else
+                {
+                    go = GameMaterials.CreateBox("Rubble", t.parent, p, chunk, GameMaterials.ColumnColor);
+                    go.transform.rotation = t.rotation;
+                }
+                var rb = PrefabPlacement.EnsureBody(go, mass, continuous: false);
                 rb.isKinematic = false;
                 rb.angularVelocity = Random.insideUnitSphere * 2f;
                 if (Floor != null) Floor.Bodies.Add(rb);

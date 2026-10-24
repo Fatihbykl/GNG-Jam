@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace KatKat
 {
@@ -17,6 +16,7 @@ namespace KatKat
         /// <summary>Katın zemin yüzeyi (alt katın tavanının üstü).</summary>
         public float BaseY;
         public Rect Footprint;
+        public GameContentSO Content;
 
         public readonly List<Rigidbody> Bodies = new List<Rigidbody>();
         public readonly List<StructuralPiece> Pieces = new List<StructuralPiece>();
@@ -48,8 +48,8 @@ namespace KatKat
             if (_block == null) _block = new MaterialPropertyBlock();
             foreach (var r in GetComponentsInChildren<Renderer>())
             {
-                if (r.sharedMaterial == null) continue;
-                Color c = r.sharedMaterial.color;
+                if (r.sharedMaterial == null || !r.sharedMaterial.HasProperty(BaseColorId)) continue;
+                Color c = r.sharedMaterial.GetColor(BaseColorId);
                 r.GetPropertyBlock(_block);
                 _block.SetColor(BaseColorId, dimmed ? c * 0.45f : c);
                 r.SetPropertyBlock(_block);
@@ -61,8 +61,7 @@ namespace KatKat
         {
             foreach (var tile in CeilingTiles)
             {
-                if (tile == null || tile.MainRenderer == null) continue;
-                tile.MainRenderer.shadowCastingMode = cutaway ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On;
+                if (tile != null) tile.SetCutaway(cutaway);
             }
         }
     }

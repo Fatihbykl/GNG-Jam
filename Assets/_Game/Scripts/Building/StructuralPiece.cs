@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace KatKat
 {
@@ -26,15 +27,35 @@ namespace KatKat
         /// <summary>Kolonlar için: bu kolonu kesen şarj (taşıyıcıysa null).</summary>
         public ExplosiveCharge Charge;
 
+        [Tooltip("Parçanın yerleştirildiği yuvanın boyutu (m). Model ölçeği/pivotu ne olursa olsun gerçek boyut.")]
+        public Vector3 SlotSize;
+        [Tooltip("Yuva merkezinin parçanın yerel uzayındaki konumu (pivot merkezde olmayabilir).")]
+        public Vector3 LocalCenter;
+
+        public Vector3 WorldCenter => transform.TransformPoint(LocalCenter);
+
         public Rigidbody Body { get; private set; }
-        public Renderer MainRenderer { get; private set; }
+        /// <summary>Kesit görünümünde gizli (yalnızca gölge düşürüyor); tıklama ışınları bunu atlar.</summary>
+        public bool IsCutaway { get; private set; }
 
         private readonly List<Joint> _joints = new List<Joint>();
+        private Renderer[] _renderers;
 
         private void Awake()
         {
             Body = GetComponent<Rigidbody>();
-            MainRenderer = GetComponent<Renderer>();
+            _renderers = GetComponentsInChildren<Renderer>();
+        }
+
+        public void SetCutaway(bool cutaway)
+        {
+            if (IsCutaway == cutaway) return;
+            IsCutaway = cutaway;
+            var mode = cutaway ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On;
+            foreach (var r in _renderers)
+            {
+                if (r != null) r.shadowCastingMode = mode;
+            }
         }
 
         public Vector3 WorldOutward => transform.TransformDirection(LocalOutward);

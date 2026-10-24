@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace KatKat
 {
@@ -23,7 +22,7 @@ namespace KatKat
 
             foreach (var wall in _gm.ActiveFloor.Walls)
             {
-                if (wall == null || wall.MainRenderer == null) continue;
+                if (wall == null) continue;
                 bool hide = false;
                 if (planning)
                 {
@@ -32,8 +31,7 @@ namespace KatKat
                     hide = Vector3.Dot(wall.WorldOutward, toCam.normalized) > FacingThreshold;
                 }
 
-                var mode = hide ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On;
-                if (wall.MainRenderer.shadowCastingMode != mode) wall.MainRenderer.shadowCastingMode = mode;
+                wall.SetCutaway(hide);
             }
         }
     }

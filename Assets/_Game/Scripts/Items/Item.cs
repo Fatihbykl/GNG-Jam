@@ -18,24 +18,27 @@ namespace KatKat
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
 
         public string DisplayName;
-        public ItemType Type;
+        public ItemDefinitionSO Definition;
         public ItemSize Size;
         public bool CanBeTied = true;
         public int Index;
 
-        public Rigidbody Body { get; private set; }
+        public Rigidbody Body => _body != null ? _body : _body = GetComponent<Rigidbody>();
         public bool IsTied => _tieCount > 0;
 
+        private Rigidbody _body;
         private int _tieCount;
         private Renderer[] _renderers;
         private MaterialPropertyBlock _block;
 
         private void Awake()
         {
-            Body = GetComponent<Rigidbody>();
-            _renderers = GetComponentsInChildren<Renderer>();
             _block = new MaterialPropertyBlock();
+            RefreshRenderers();
         }
+
+        /// <summary>Parlama için renderer listesini yeniler (gevşek parçalar ayrıldıktan sonra çağrılır).</summary>
+        public void RefreshRenderers() => _renderers = GetComponentsInChildren<Renderer>();
 
         public void AddTie()
         {
@@ -53,8 +56,8 @@ namespace KatKat
         {
             foreach (var r in _renderers)
             {
-                if (r == null || r.sharedMaterial == null) continue;
-                Color baseColor = r.sharedMaterial.color;
+                if (r == null || r.sharedMaterial == null || !r.sharedMaterial.HasProperty(BaseColorId)) continue;
+                Color baseColor = r.sharedMaterial.GetColor(BaseColorId);
                 r.GetPropertyBlock(_block);
                 _block.SetColor(BaseColorId, IsTied ? Color.Lerp(baseColor, new Color(0.6f, 1f, 0.6f), 0.45f) : baseColor);
                 r.SetPropertyBlock(_block);
