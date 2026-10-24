@@ -43,6 +43,13 @@ namespace KatKat
         public float explosionUpward = 0.2f;
         public float ropeBlastPower = 40f;
 
+        [Header("Parçalanma (Cell Fracture modelleri)")]
+        [Tooltip("Kırılabilir duvar/tavan bu bağıl hızın (m/s) üstündeki çarpmada parçalanır.")]
+        public float shatterImpactSpeed = 4f;
+        [Tooltip("Şarj bu yarıçaptaki kırılabilir parçaları anında parçalar.")]
+        public float shatterBlastRadius = 1.2f;
+        public float shardMinMass = 0.5f;
+
         [Header("İp")]
         public float ropeSlack = 1.05f;
         public float maxRopeLength = 9f;

@@ -81,6 +81,12 @@ namespace KatKat
                 foreach (var col in Physics.OverlapSphere(pos, config.explosionRadius, ~0, QueryTriggerInteraction.Ignore))
                 {
                     var rb = col.attachedRigidbody;
+                    if (rb != null && !rb.isKinematic && rb.TryGetComponent<Fracturable>(out var fracturable) && !fracturable.IsShattered &&
+                        Vector3.Distance(col.ClosestPoint(pos), pos) <= config.shatterBlastRadius)
+                    {
+                        fracturable.Shatter(pos, config.explosionKick);
+                        continue;
+                    }
                     if (rb == null || rb.isKinematic || !hit.Add(rb)) continue;
                     rb.AddExplosionForce(config.explosionKick, pos, config.explosionRadius, config.explosionUpward,
                         ForceMode.VelocityChange);

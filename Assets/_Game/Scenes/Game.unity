@@ -275,10 +275,15 @@ MonoBehaviour:
     wallMass: 30
     jointBreakForce: 6000
     jointBreakTorque: 4000
-    explosionForce: 900
+    bearingRatio: 0.4
+    bearingRatioDecreasePerFloor: 0.03
+    minBearingRatio: 0.15
+    bearingBaseJointScale: 4
+    bearingTopJointScale: 0.3
+    explosionKick: 1.2
     explosionRadius: 3.5
     explosionUpward: 0.3
-    ropeExplosionPower: 200
+    ropeBlastPower: 40
     ropeSlack: 1.05
     maxRopeLength: 9
     ropeBreakWarmup: 0.4
@@ -300,6 +305,7 @@ MonoBehaviour:
     settleHoldTime: 1.2
     settleTimeout: 10
     killDepth: 15
+  Content: {fileID: 11400000, guid: 1aee3aedfc646614ab6448570f1f4477, type: 2}
   RopeTypes:
   - {fileID: 11400000, guid: c700f8908011da64d8ace8342363f442, type: 2}
   - {fileID: 11400000, guid: e5ed22f440ec3e94da57493f311b861f, type: 2}
@@ -331,6 +337,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1894091305}
   - component: {fileID: 1894091304}
+  - component: {fileID: 1894091306}
   m_Layer: 0
   m_Name: Sun
   m_TagString: Untagged
@@ -418,6 +425,29 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1894091306
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1894091303}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_LightLayerMask: 1
+  m_RenderingLayers: 1
+  m_CustomShadowLayers: 0
+  m_ShadowLayerMask: 1
+  m_ShadowRenderingLayers: 1
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

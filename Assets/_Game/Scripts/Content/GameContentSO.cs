@@ -15,9 +15,11 @@ namespace KatKat
         public GameObject ColumnPrefab;
         [Tooltip("Taşıyıcı (patlamayan) kolon. Boşsa Column prefabı kullanılır ve koyu renge boyanır.")]
         public GameObject BearingColumnPrefab;
-        [Tooltip("Dış duvar. Yerel X = duvar boyu, Y = yükseklik, +Z = binanın dışına bakan yüz.")]
+        [Tooltip("Dış duvar. Yerel X = duvar boyu, Y = yükseklik, +Z = binanın dışına bakan yüz.\n" +
+                 "Cell Fracture modeli: kökün altında 2+ parça mesh varsa kırılabilir olur.")]
         public GameObject WallPrefab;
-        [Tooltip("Tavan döşemesi (bir hücre). Yuva: hücre × döşeme kalınlığı × hücre.")]
+        [Tooltip("Tavan döşemesi (bir hücre), aynı zamanda alt katın zemini. Yuva: hücre × döşeme kalınlığı × hücre.\n" +
+                 "Cell Fracture modeli: kökün altında 2+ parça mesh varsa kırılabilir olur.")]
         public GameObject CeilingPrefab;
         [Tooltip("Kolon patlayınca kalan moloz parçası. Yuvaya sığdırılır.")]
         public GameObject RubblePrefab;

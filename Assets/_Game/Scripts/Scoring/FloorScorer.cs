@@ -69,9 +69,21 @@ namespace KatKat
                 if (item != null) itemBodies[item.Body] = item;
             }
 
+            // Kırılan parçanın kopan parçaları tek parça sayılır: kütlesinin yarısı bölge içindeyse içeride.
+            var fragments = new Dictionary<StructuralPiece, (float inside, float total, bool hit)>();
+
             foreach (var rb in floor.Bodies)
             {
                 if (rb == null) continue;
+                if (rb.TryGetComponent<Fragment>(out var fragment) && fragment.Source != null)
+                {
+                    fragments.TryGetValue(fragment.Source, out var acc);
+                    bool fragInside = rb.gameObject.activeSelf && zone.Contains(rb.worldCenterOfMass);
+                    fragments[fragment.Source] = (acc.inside + (fragInside ? rb.mass : 0f), acc.total + rb.mass,
+                        acc.hit || neighborHits.Contains(rb));
+                    continue;
+                }
+
                 bool isItem = itemBodies.TryGetValue(rb, out var item);
                 outcomes.Add(new BodyOutcome
                 {
@@ -80,6 +92,11 @@ namespace KatKat
                     Inside = rb.gameObject.activeSelf && zone.Contains(rb.worldCenterOfMass),
                     HitNeighbor = neighborHits.Contains(rb)
                 });
+            }
+
+            foreach (var (inside, total, hit) in fragments.Values)
+            {
+                outcomes.Add(new BodyOutcome { Inside = inside >= total * 0.5f, HitNeighbor = hit });
             }
 
             return Tally(outcomes);

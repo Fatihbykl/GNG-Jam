@@ -115,6 +115,7 @@ namespace KatKat
                     new Vector3(cfg.cellSize, cfg.slabThickness, cfg.cellSize), GameMaterials.Concrete);
                 var tile = AddPiece(floor, go, PieceKind.Ceiling, cfg.slabMass, pos,
                     new Vector3(cfg.cellSize, cfg.slabThickness, cfg.cellSize));
+                Fracturable.TryAdd(tile, floor, cfg);
                 tiles[i, j] = tile;
                 floor.CeilingTiles.Add(tile);
 
@@ -166,6 +167,7 @@ namespace KatKat
                 GameMaterials.WallColor);
             var wall = AddPiece(floor, go, PieceKind.Wall, cfg.wallMass, pos, size);
             wall.LocalOutward = Vector3.forward;
+            Fracturable.TryAdd(wall, floor, cfg);
             floor.Walls.Add(wall);
             JoinToColumn(wall, colA, cfg);
             JoinToColumn(wall, colB, cfg);
