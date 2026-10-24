@@ -1,0 +1,51 @@
+using UnityEngine;
+
+namespace KatKat
+{
+    [CreateAssetMenu(menuName = "Kat Kat Yıkım/Rope Type", fileName = "RopeType")]
+    public class RopeTypeSO : ScriptableObject
+    {
+        public string DisplayName = "İp";
+        [Tooltip("Bütçeden metre başına düşülen miktar.")]
+        public float CostPerMeter = 1f;
+        [Tooltip("Pin uçlarında ölçülen kuvvet (N) bu değeri aşınca ip kopar.")]
+        public float BreakForce = 1500f;
+        [Tooltip("Yedek kural: dinlenme uzunluğuna göre bu oranın üstünde uzarsa kopar.")]
+        public float MaxStretchRatio = 1.6f;
+        [Tooltip("Tensio Compliance. 0 = sert, büyüdükçe esner (elastik ip).")]
+        public float Compliance;
+        public float ParticleMass = 0.05f;
+        public float Radius = 0.03f;
+        public Color Color = Color.white;
+        public Material Material;
+
+        public Material ResolveMaterial() => Material != null ? Material : GameMaterials.Get(Color);
+
+        public static RopeTypeSO Create(string name, float cost, float breakForce, float stretch, float compliance,
+            float particleMass, float radius, Color color)
+        {
+            var t = CreateInstance<RopeTypeSO>();
+            t.name = name;
+            t.DisplayName = name;
+            t.CostPerMeter = cost;
+            t.BreakForce = breakForce;
+            t.MaxStretchRatio = stretch;
+            t.Compliance = compliance;
+            t.ParticleMass = particleMass;
+            t.Radius = radius;
+            t.Color = color;
+            return t;
+        }
+
+        /// <summary>GDD'deki üç temel ip. Asset atanmamışsa bunlar kullanılır.</summary>
+        public static RopeTypeSO[] CreateDefaults()
+        {
+            return new[]
+            {
+                Create("İnce ip", 1f, 1400f, 1.5f, 0f, 0.04f, 0.025f, new Color(0.93f, 0.85f, 0.65f)),
+                Create("Çelik halat", 2.5f, 9000f, 1.3f, 0f, 0.3f, 0.045f, new Color(0.55f, 0.58f, 0.62f)),
+                Create("Elastik ip", 1.5f, 3500f, 2.2f, 0.5f, 0.06f, 0.035f, new Color(0.35f, 0.85f, 0.45f)),
+            };
+        }
+    }
+}

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 2690cb7bc124a9a469a75525b9591d9d
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 358842
+  packageName: 'Tensio: Advanced Rope Physics'
+  packageVersion: 1.2.4
+  assetPath: Assets/FuzzyLogicLab/Tensio/Demos/Materials/Ropes/ChainLinkMaterial.mat
+  uploadId: 999452

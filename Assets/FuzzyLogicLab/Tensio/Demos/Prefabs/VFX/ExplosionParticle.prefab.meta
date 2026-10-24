@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: b31b49c565ae9884f9d78b6cf93cb1d4
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 358842
+  packageName: 'Tensio: Advanced Rope Physics'
+  packageVersion: 1.2.4
+  assetPath: Assets/FuzzyLogicLab/Tensio/Demos/Prefabs/VFX/ExplosionParticle.prefab
+  uploadId: 999452

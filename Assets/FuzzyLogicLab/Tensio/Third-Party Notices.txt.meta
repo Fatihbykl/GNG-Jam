@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: d0655eb434dd169418aa90c86b88bbfa
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 358842
+  packageName: 'Tensio: Advanced Rope Physics'
+  packageVersion: 1.2.4
+  assetPath: Assets/FuzzyLogicLab/Tensio/Third-Party Notices.txt
+  uploadId: 999452

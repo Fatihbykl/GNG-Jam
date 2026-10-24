@@ -1,0 +1,27 @@
+{
+    "name": "Tensio.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:4cb097980f566f94ca624487a2eb6937",
+        "GUID:d8b63aba1907145bea998dd612889d6b",
+        "GUID:e0cd26848372d4e5c891c569017e11f1",
+        "GUID:21d1eb854b91ade49bc69a263d12bee2"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.splines",
+            "expression": "",
+            "define": "TENSIO_SPLINES_SUPPORT"
+        }
+    ],
+    "noEngineReferences": false
+}

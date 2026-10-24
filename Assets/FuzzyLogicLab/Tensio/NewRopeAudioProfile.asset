@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb9b325adb30d374d97a3491abf5a52b, type: 3}
+  m_Name: NewRopeAudioProfile
+  m_EditorClassIdentifier: Assembly-CSharp::XPBDRope.RopeAudioProfile
+  mixerGroup: {fileID: 0}
+  tensionLoop: {fileID: 8300000, guid: 912e5de5c1b068d49a0549dcdae59310, type: 3}
+  maxTensionVolume: 0.5
+  maxTensionPitch: 2.33
+  stressThreshold: 1.06
+  maxStressRatio: 2
+  windLoop: {fileID: 8300000, guid: 7b869298f83855047a698bb11b800456, type: 3}
+  maxWindVolume: 1
+  maxWindVelocity: 2
+  impactClips:
+  - {fileID: 8300000, guid: d9a87b2c9f22c5047a8a1cf27c406717, type: 3}
+  impactVolume: 1
+  minImpactVelocity: 1
+  maxImpactVelocity: 10
+  impactCooldown: 0.15
+  snapSound: {fileID: 8300000, guid: 1626d08d4b0467d4d9c82c095f42a43d, type: 3}
+  snapVolume: 1
+  rolloffMode: 1
+  minDistance: 1
+  maxDistance: 20

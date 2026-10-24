@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 2f682dd4a157d99449b2808dfcd66fe8
+AssetOrigin:
+  serializedVersion: 1
+  productId: 358842
+  packageName: 'Tensio: Advanced Rope Physics'
+  packageVersion: 1.2.4
+  assetPath: Assets/FuzzyLogicLab/Tensio/Runtime/Interaction/RopeDebris.cs
+  uploadId: 999452

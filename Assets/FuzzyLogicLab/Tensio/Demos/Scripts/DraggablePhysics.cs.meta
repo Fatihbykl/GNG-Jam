@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 60cf08df9029f9041b1289adfd10e40c
+AssetOrigin:
+  serializedVersion: 1
+  productId: 358842
+  packageName: 'Tensio: Advanced Rope Physics'
+  packageVersion: 1.2.4
+  assetPath: Assets/FuzzyLogicLab/Tensio/Demos/Scripts/DraggablePhysics.cs
+  uploadId: 999452

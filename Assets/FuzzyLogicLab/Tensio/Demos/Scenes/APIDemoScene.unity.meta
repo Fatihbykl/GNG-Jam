@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 130b2f4cc992e754aa3eb6c089db0b49
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 358842
+  packageName: 'Tensio: Advanced Rope Physics'
+  packageVersion: 1.2.4
+  assetPath: Assets/FuzzyLogicLab/Tensio/Demos/Scenes/APIDemoScene.unity
+  uploadId: 999452

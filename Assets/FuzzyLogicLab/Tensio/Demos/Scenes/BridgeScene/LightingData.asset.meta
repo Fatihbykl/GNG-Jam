@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: a98c9225a1fdc5c4d8cc46aa516fbe65
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 112000000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 358842
+  packageName: 'Tensio: Advanced Rope Physics'
+  packageVersion: 1.2.4
+  assetPath: Assets/FuzzyLogicLab/Tensio/Demos/Scenes/BridgeScene/LightingData.asset
+  uploadId: 999452

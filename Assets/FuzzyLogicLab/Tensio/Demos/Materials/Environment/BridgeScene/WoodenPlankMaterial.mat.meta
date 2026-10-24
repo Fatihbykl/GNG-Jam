@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 7260dc5b3e814554d92c388887607ae0
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 358842
+  packageName: 'Tensio: Advanced Rope Physics'
+  packageVersion: 1.2.4
+  assetPath: Assets/FuzzyLogicLab/Tensio/Demos/Materials/Environment/BridgeScene/WoodenPlankMaterial.mat
+  uploadId: 999452

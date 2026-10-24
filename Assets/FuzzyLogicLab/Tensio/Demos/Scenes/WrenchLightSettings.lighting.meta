@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: f5f7f88cfb5613e4d88733a2f00d00d5
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 4890085278179872738
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 358842
+  packageName: 'Tensio: Advanced Rope Physics'
+  packageVersion: 1.2.4
+  assetPath: Assets/FuzzyLogicLab/Tensio/Demos/Scenes/WrenchLightSettings.lighting
+  uploadId: 999452

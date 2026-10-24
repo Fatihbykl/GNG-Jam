@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 5758f95efb5a4594aa107e51c6b146ab
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 358842
+  packageName: 'Tensio: Advanced Rope Physics'
+  packageVersion: 1.2.4
+  assetPath: Assets/FuzzyLogicLab/Tensio/Demos/Materials/Environment/BridgeScene/BridgeGroundMaterial_2.mat
+  uploadId: 999452

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 4cb097980f566f94ca624487a2eb6937
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 358842
+  packageName: 'Tensio: Advanced Rope Physics'
+  packageVersion: 1.2.4
+  assetPath: Assets/FuzzyLogicLab/Tensio/Runtime/Tensio.Runtime.asmdef
+  uploadId: 999452

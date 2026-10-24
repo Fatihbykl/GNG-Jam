@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: d750e9806b58c2d4a8eb41e20bde10cd
+AssetOrigin:
+  serializedVersion: 1
+  productId: 358842
+  packageName: 'Tensio: Advanced Rope Physics'
+  packageVersion: 1.2.4
+  assetPath: Assets/FuzzyLogicLab/Tensio/Runtime/Audio/RopeAudio.cs
+  uploadId: 999452

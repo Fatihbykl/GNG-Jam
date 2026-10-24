@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 9cf4709e0ea331a4e8990519bd6c3677
+AssetOrigin:
+  serializedVersion: 1
+  productId: 358842
+  packageName: 'Tensio: Advanced Rope Physics'
+  packageVersion: 1.2.4
+  assetPath: Assets/FuzzyLogicLab/Tensio/Demos/Scripts/GrapplingHook.cs
+  uploadId: 999452

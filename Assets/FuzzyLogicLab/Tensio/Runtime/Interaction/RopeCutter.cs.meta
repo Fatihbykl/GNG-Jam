@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: b4fbcfa9c4f1af543a85aac78754218c
+AssetOrigin:
+  serializedVersion: 1
+  productId: 358842
+  packageName: 'Tensio: Advanced Rope Physics'
+  packageVersion: 1.2.4
+  assetPath: Assets/FuzzyLogicLab/Tensio/Runtime/Interaction/RopeCutter.cs
+  uploadId: 999452

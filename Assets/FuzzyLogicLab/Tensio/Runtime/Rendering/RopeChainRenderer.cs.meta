@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 8e2613a62795e954d8d91a5de66dc48d
+AssetOrigin:
+  serializedVersion: 1
+  productId: 358842
+  packageName: 'Tensio: Advanced Rope Physics'
+  packageVersion: 1.2.4
+  assetPath: Assets/FuzzyLogicLab/Tensio/Runtime/Rendering/RopeChainRenderer.cs
+  uploadId: 999452

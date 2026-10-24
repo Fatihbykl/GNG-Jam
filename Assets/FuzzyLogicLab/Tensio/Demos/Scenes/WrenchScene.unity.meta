@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 7708497c2fde07540ab4fb8aa54aa75f
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 358842
+  packageName: 'Tensio: Advanced Rope Physics'
+  packageVersion: 1.2.4
+  assetPath: Assets/FuzzyLogicLab/Tensio/Demos/Scenes/WrenchScene.unity
+  uploadId: 999452

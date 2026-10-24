@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: bd846a53bb0a28a43bc3d4606e15a042
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 358842
+  packageName: 'Tensio: Advanced Rope Physics'
+  packageVersion: 1.2.4
+  assetPath: Assets/FuzzyLogicLab/Tensio/NewRopeAudioProfile.asset
+  uploadId: 999452

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 8fc94d8f6530c2a46ab61af9e8dd9847
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 358842
+  packageName: 'Tensio: Advanced Rope Physics'
+  packageVersion: 1.2.4
+  assetPath: Assets/FuzzyLogicLab/Tensio/Demos/Prefabs/SilkRopeLevelOfDetail.prefab
+  uploadId: 999452

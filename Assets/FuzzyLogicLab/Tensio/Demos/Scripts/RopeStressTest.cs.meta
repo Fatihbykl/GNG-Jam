@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: c57f86c550eebff4bbe4ff8bc4618f68
+AssetOrigin:
+  serializedVersion: 1
+  productId: 358842
+  packageName: 'Tensio: Advanced Rope Physics'
+  packageVersion: 1.2.4
+  assetPath: Assets/FuzzyLogicLab/Tensio/Demos/Scripts/RopeStressTest.cs
+  uploadId: 999452

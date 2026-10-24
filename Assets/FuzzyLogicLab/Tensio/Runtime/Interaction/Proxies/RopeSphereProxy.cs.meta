@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 0fa10646b5d64b646bbeba1c907591a3
+AssetOrigin:
+  serializedVersion: 1
+  productId: 358842
+  packageName: 'Tensio: Advanced Rope Physics'
+  packageVersion: 1.2.4
+  assetPath: Assets/FuzzyLogicLab/Tensio/Runtime/Interaction/Proxies/RopeSphereProxy.cs
+  uploadId: 999452

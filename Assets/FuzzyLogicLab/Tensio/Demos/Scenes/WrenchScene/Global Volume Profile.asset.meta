@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: cc147001dbd1e3541aaa0aabbe6846b3
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 358842
+  packageName: 'Tensio: Advanced Rope Physics'
+  packageVersion: 1.2.4
+  assetPath: Assets/FuzzyLogicLab/Tensio/Demos/Scenes/WrenchScene/Global Volume Profile.asset
+  uploadId: 999452

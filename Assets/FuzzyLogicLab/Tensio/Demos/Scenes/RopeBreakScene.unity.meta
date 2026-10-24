@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: df3021a66a3df594192f7e6db88dbe18
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 358842
+  packageName: 'Tensio: Advanced Rope Physics'
+  packageVersion: 1.2.4
+  assetPath: Assets/FuzzyLogicLab/Tensio/Demos/Scenes/RopeBreakScene.unity
+  uploadId: 999452

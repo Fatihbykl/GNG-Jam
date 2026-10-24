@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: e1fe660eb56cca144a5abf4db863e9c8
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 358842
+  packageName: 'Tensio: Advanced Rope Physics'
+  packageVersion: 1.2.4
+  assetPath: Assets/FuzzyLogicLab/Tensio/Demos/Prefabs/ThickRope.prefab
+  uploadId: 999452

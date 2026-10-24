@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 6c4149ff5e496574d8a24551bc604e07
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 112000000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 358842
+  packageName: 'Tensio: Advanced Rope Physics'
+  packageVersion: 1.2.4
+  assetPath: Assets/FuzzyLogicLab/Tensio/Demos/Scenes/WindTunnelScene/LightingData.asset
+  uploadId: 999452
