@@ -34,6 +34,8 @@ namespace KatKat
         [Tooltip("Patlamada kamerayı kapatan tavan/duvarlar için saydam URP Lit şablonu (M_FadeTemplate).\n" +
                  "Rengi ve dokusu orijinal materyalden kopyalanır. Boşsa çalışma anında oluşturulur (build'de saydam varyant eksik kalabilir).")]
         public Material FadeMaterial;
+        [Tooltip("Patlama, toz ve kıvılcım efektleri için URP Particles/Unlit şablonu (M_ParticleTemplate).")]
+        public Material ParticleMaterial;
 
         [Header("Ölçekleme")]
         [Tooltip("Açık: yapı prefabları yuvalarına esnetilir (her boyuttaki model çalışır).\n" +

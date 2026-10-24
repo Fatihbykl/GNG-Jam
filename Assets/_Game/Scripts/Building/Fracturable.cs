@@ -73,6 +73,7 @@ namespace KatKat
 
             float totalVolume = 0f;
             foreach (var mf in _shards) totalVolume += Volume(mf);
+            SpawnDust();
 
             foreach (var mf in _shards)
             {
@@ -107,6 +108,20 @@ namespace KatKat
                 Fragment.Mark(go, _piece);
                 _floor.Bodies.Add(rb);
             }
+        }
+
+        private void SpawnDust()
+        {
+            bool any = false;
+            var bounds = new Bounds();
+            foreach (var mf in _shards)
+            {
+                if (mf == null || !mf.TryGetComponent<Renderer>(out var r)) continue;
+                if (!any) bounds = r.bounds;
+                else bounds.Encapsulate(r.bounds);
+                any = true;
+            }
+            if (any) Vfx.Shatter(bounds);
         }
 
         private static float Volume(MeshFilter mf)

@@ -109,6 +109,7 @@ namespace KatKat
             // Güneş, ortam ışığı, gökyüzü, sis ve post-processing
             Look = gameObject.AddComponent<LookDirector>();
             Look.Init(this, cam);
+            Vfx.Init(Content);
         }
 
         private void Start() => NewRun();
@@ -195,14 +196,15 @@ namespace KatKat
             Orbit.SetCinematic(true);
             // Planlamadaki çöküş oku, eşyaların kayacağı yönü belirler
             Shove.Arm(ActiveFloor, Collapse.HasDirection ? Collapse.Direction : Vector3.zero, Collapse.Strength, Config);
-            Sequence.Play(Config, ExplosionVfxPrefab, () => _settleRoutine = StartCoroutine(SettleRoutine()));
+            Sequence.Play(Config, Visuals.useCustomBlastFx ? null : ExplosionVfxPrefab, () => _settleRoutine = StartCoroutine(SettleRoutine()));
         }
 
         /// <summary>Şarjlı kolon patlarken ona bağlı ipler boşa çıkar.</summary>
         private void OnChargeFiring(ExplosiveCharge charge)
         {
             Shove.OnChargeFired();
-            Orbit.Shake(Orbit.ShakeOnCharge);
+            Orbit.ShakeFrom(charge.LabelPosition, Orbit.ShakeOnCharge);
+            SlowMo.HitStop(Visuals.hitStopDuration, Visuals.hitStopScale);
             int released = 0;
             foreach (var link in Ropes)
             {
@@ -223,6 +225,8 @@ namespace KatKat
         private IEnumerator SettleRoutine()
         {
             State = GameState.Settling;
+            var fp = ActiveFloor.Footprint;
+            Vfx.SettleDust(new Vector3(fp.center.x, ActiveFloor.BaseY + 0.3f, fp.center.y), fp.size);
             float elapsed = 0f, hold = 0f;
             const float minWait = 1f;
 

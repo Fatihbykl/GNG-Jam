@@ -21,6 +21,7 @@ MonoBehaviour:
   FloorRingPrefab: {fileID: 5452616181484888971, guid: d621858b170f37d478b547e553177cd4, type: 3}
   ChargeMarkerPrefab: {fileID: 2411810382320939322, guid: 04f4b88b9a615b043968f091a340abe4, type: 3}
   FadeMaterial: {fileID: 2100000, guid: 995a1bf52717478cb6cbc54699f368b5, type: 2}
+  ParticleMaterial: {fileID: 2100000, guid: a32ee54b39aa485fba5f8050cc9c9e44, type: 2}
   FitStructureToSlot: 1
   Items:
   - {fileID: 11400000, guid: 087ecba598f10774f8500ed37079faf4, type: 2}

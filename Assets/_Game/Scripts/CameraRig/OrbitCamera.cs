@@ -21,6 +21,8 @@ namespace KatKat
         [Tooltip("Her şarj patlamasında sarsıntı genliği (m).")]
         public float ShakeOnCharge = 0.25f;
         public float ShakeDecay = 7f;
+        [Tooltip("Bu mesafedeki patlama tam genlikte sarsar; yakındakiler daha çok, uzaktakiler daha az.")]
+        public float ShakeReferenceDistance = 20f;
 
         /// <summary>Son sağ tık basışı sürüklemeye dönüştüyse true (tıklama olarak sayılmasın).</summary>
         public bool RightDragged { get; private set; }
@@ -42,6 +44,13 @@ namespace KatKat
 
         /// <summary>Kamerayı sarsar; üst üste gelen patlamalar birikmez, en güçlüsü geçerli olur.</summary>
         public void Shake(float amount) => _shake = Mathf.Max(_shake, amount);
+
+        /// <summary>Kaynağın kameraya uzaklığına göre ölçeklenen sarsıntı.</summary>
+        public void ShakeFrom(Vector3 source, float amount)
+        {
+            float d = Mathf.Max(1f, Vector3.Distance(transform.position, source));
+            Shake(amount * Mathf.Clamp(ShakeReferenceDistance / d, 0.3f, 1.6f));
+        }
 
         private void LateUpdate()
         {

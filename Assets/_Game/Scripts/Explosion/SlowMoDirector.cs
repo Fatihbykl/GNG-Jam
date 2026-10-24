@@ -22,6 +22,7 @@ namespace KatKat
 
         private GameManager _gm;
         private float _cooldown;
+        private float _hitStop;
 
         public void Init(GameManager gm) => _gm = gm;
 
@@ -37,7 +38,19 @@ namespace KatKat
         {
             IsMonitoring = false;
             IsActive = false;
+            _hitStop = 0f;
             TimeController.ResetTime();
+        }
+
+        /// <summary>
+        /// Patlama anında zamanı çok kısa süre neredeyse durdurur, sonra normal hıza yumuşakça döner.
+        /// Ağır çekim zaten açıksa dokunmaz.
+        /// </summary>
+        public void HitStop(float realSeconds, float scale)
+        {
+            if (!IsMonitoring || IsActive || realSeconds <= 0f) return;
+            _hitStop = Mathf.Max(_hitStop, realSeconds);
+            TimeController.SetScale(Mathf.Min(TimeController.CurrentScale, scale));
         }
 
         public bool TryTrigger()
@@ -66,7 +79,8 @@ namespace KatKat
                 return;
             }
 
-            if (TimeController.CurrentScale < 1f)
+            if (_hitStop > 0f) _hitStop -= dt;
+            else if (TimeController.CurrentScale < 1f)
                 TimeController.SetScale(Mathf.MoveTowards(TimeController.CurrentScale, 1f, dt * RampUpSpeed));
 
             var kb = Keyboard.current;

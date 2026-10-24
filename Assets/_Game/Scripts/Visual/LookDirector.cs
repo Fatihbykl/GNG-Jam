@@ -23,11 +23,13 @@ namespace KatKat
         private Vignette _vignette;
         private ChromaticAberration _chromatic;
         private float _slowMoWeight;
+        private float _baseFov;
 
         public void Init(GameManager gm, Camera cam)
         {
             _gm = gm;
             _cam = cam;
+            _baseFov = cam.fieldOfView;
             cam.GetUniversalAdditionalCameraData().renderPostProcessing = true;
 
             BuildVolume();
@@ -87,7 +89,8 @@ namespace KatKat
 
             // Ağır çekim ne kadar derinse efekt o kadar güçlü
             float slowScale = Mathf.Min(_gm.Config.slowMoScale, 0.99f);
-            float target = 1f - Mathf.InverseLerp(slowScale, 1f, TimeController.CurrentScale);
+            // Hit-stop'ta efekt yanıp sönmesin: yalnızca ağır çekim penceresi açıkken
+            float target = _gm.SlowMo.IsActive ? 1f - Mathf.InverseLerp(slowScale, 1f, TimeController.CurrentScale) : 0f;
             _slowMoWeight = Mathf.MoveTowards(_slowMoWeight, target, _gm.Visuals.slowMoBlendSpeed * Time.unscaledDeltaTime);
             Apply();
         }
@@ -139,6 +142,7 @@ namespace KatKat
             _vignette.intensity.value = Mathf.Lerp(v.vignette, v.slowMoVignette, w);
             _vignette.smoothness.value = 0.45f;
             _chromatic.intensity.value = v.slowMoChromatic * w;
+            _cam.fieldOfView = _baseFov - v.slowMoFovZoom * w;
         }
 
         private void OnDestroy()

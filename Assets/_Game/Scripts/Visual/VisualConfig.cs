@@ -52,7 +52,16 @@ namespace KatKat
         [Range(0f, 1f)] public float bloomScatter = 0.65f;
         [Range(0f, 1f)] public float vignette = 0.22f;
 
+        [Header("Patlama hissi")]
+        [Tooltip("Açık: kodla kurulan patlama efekti. Kapalı: GameManager.ExplosionVfxPrefab kullanılır.")]
+        public bool useCustomBlastFx = true;
+        [Tooltip("Her patlamada zamanın kısa süre neredeyse durması (gerçek saniye). 0 = kapalı.")]
+        public float hitStopDuration = 0.06f;
+        [Range(0.01f, 1f)] public float hitStopScale = 0.05f;
+
         [Header("Ağır çekim efekti")]
+        [Tooltip("Ağır çekimde görüş açısının daralması (derece).")]
+        public float slowMoFovZoom = 6f;
         [Range(-100f, 0f)] public float slowMoSaturation = -40f;
         [Range(0f, 1f)] public float slowMoChromatic = 0.45f;
         [Range(0f, 1f)] public float slowMoVignette = 0.42f;

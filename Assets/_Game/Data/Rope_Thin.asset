@@ -20,4 +20,4 @@ MonoBehaviour:
   ParticleMass: 0.04
   Radius: 0.025
   Color: {r: 0.93, g: 0.85, b: 0.65, a: 1}
-  Material: {fileID: 0}
+  Material: {fileID: 2100000, guid: d1924646d579aad49b47ad6f392f61ef, type: 2}

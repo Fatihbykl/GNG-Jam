@@ -155,7 +155,8 @@ namespace KatKat
             Destroy(column.gameObject);
         }
 
-        private static void SpawnVfx(GameObject prefab, Vector3 pos)
+        /// <param name="prefab">Özel efekt prefabı; boşsa kodla kurulan <see cref="Vfx.Blast"/> oynar.</param>
+        private void SpawnVfx(GameObject prefab, Vector3 pos)
         {
             var light = new GameObject("BlastLight").AddComponent<Light>();
             light.transform.position = pos;
@@ -172,9 +173,8 @@ namespace KatKat
                 return;
             }
 
-            // Prefab yoksa basit bir parlama
-            var flash = GameMaterials.CreateBox("Flash", null, pos, Vector3.one * 0.8f, new Color(1f, 0.6f, 0.1f), false);
-            flash.AddComponent<FlashFade>();
+            if (Floor != null) Vfx.Blast(pos, Floor.transform, Floor.BaseY);
+            else Vfx.Blast(pos, null, 0f);
         }
 
         /// <summary>Kısa turuncu ışık parlaması; scaled zamanla söner, ağır çekimde uzar.</summary>
@@ -193,18 +193,6 @@ namespace KatKat
                 float k = 1f - _t / Duration;
                 _light.intensity = Peak * k * k;
                 if (_t >= Duration) Destroy(gameObject);
-            }
-        }
-
-        private class FlashFade : MonoBehaviour
-        {
-            private float _t;
-
-            private void Update()
-            {
-                _t += Time.deltaTime;
-                transform.localScale = Vector3.one * Mathf.Lerp(0.8f, 3f, _t / 0.35f);
-                if (_t > 0.35f) Destroy(gameObject);
             }
         }
     }

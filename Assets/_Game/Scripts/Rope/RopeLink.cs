@@ -182,8 +182,14 @@ namespace KatKat
                 _rope.SetVelocities(i, Vector3.zero);
             }
 
+            // Malzeme RopeRenderer.Awake'ten önce hazır olmalı, yoksa Tensio "Missing Material" hatası basar.
+            var material = Type.ResolveMaterial();
+            if (go.GetComponent<MeshFilter>() == null) go.AddComponent<MeshFilter>();
+            var meshRenderer = go.GetComponent<MeshRenderer>();
+            if (meshRenderer == null) meshRenderer = go.AddComponent<MeshRenderer>();
+            meshRenderer.sharedMaterial = material;
             var renderer = go.AddComponent<RopeRenderer>();
-            renderer.Material = Type.ResolveMaterial();
+            renderer.Material = material;
             renderer.Radius = Type.Radius;
 
             _rope.OnRopeCut += HandleRopeCut;
