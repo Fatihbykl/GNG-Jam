@@ -216,7 +216,7 @@ namespace KatKat
             foreach (var h in _hits)
             {
                 var piece = h.collider.GetComponentInParent<StructuralPiece>();
-                if (piece != null && piece.IsCutaway) continue;
+                if (piece != null && (piece.IsCutaway || piece.IsFaded)) continue;
                 if (h.collider.isTrigger && h.collider.GetComponent<AnchorPoint>() == null) continue;
                 result = h;
                 return true;

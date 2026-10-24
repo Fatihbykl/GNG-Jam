@@ -207,6 +207,7 @@ namespace KatKat
         private void OnChargeFiring(ExplosiveCharge charge)
         {
             Shove.OnChargeFired();
+            Orbit.Shake(Orbit.ShakeOnCharge);
             int released = 0;
             foreach (var link in Ropes)
             {

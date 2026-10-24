@@ -37,6 +37,10 @@ namespace KatKat
         public Rigidbody Body { get; private set; }
         /// <summary>Kesit görünümünde gizli (yalnızca gölge düşürüyor); tıklama ışınları bunu atlar.</summary>
         public bool IsCutaway { get; private set; }
+        /// <summary>Patlamada saydamlaşmış (bkz. <see cref="WallFader"/>); tıklama ışınları bunu da atlar.</summary>
+        public bool IsFaded { get; set; }
+        /// <summary>Parçanın (ve Cell Fracture parçalarının) renderer'ları.</summary>
+        public Renderer[] Renderers => _renderers;
 
         private readonly List<Joint> _joints = new List<Joint>();
         private Renderer[] _renderers;

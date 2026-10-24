@@ -15,8 +15,12 @@ namespace KatKat
         public float MaxPitch = 85f;
         public float RotateSpeed = 0.25f;
         public float Smoothing = 10f;
-        public float CinematicExtraDistance = 7f;
-        public float CinematicMinPitch = 30f;
+        public float CinematicExtraDistance = 5f;
+        [Tooltip("Patlamada kamera en az bu açıyla tepeden bakar; saydam tavanın içinden kat görünür.")]
+        public float CinematicMinPitch = 55f;
+        [Tooltip("Her şarj patlamasında sarsıntı genliği (m).")]
+        public float ShakeOnCharge = 0.25f;
+        public float ShakeDecay = 7f;
 
         /// <summary>Son sağ tık basışı sürüklemeye dönüştüyse true (tıklama olarak sayılmasın).</summary>
         public bool RightDragged { get; private set; }
@@ -26,6 +30,7 @@ namespace KatKat
         private Vector3 _focus, _focusTarget;
         private bool _cinematic;
         private float _dragAccum;
+        private float _shake;
 
         public void SetFocus(Vector3 point, bool snap = false)
         {
@@ -34,6 +39,9 @@ namespace KatKat
         }
 
         public void SetCinematic(bool on) => _cinematic = on;
+
+        /// <summary>Kamerayı sarsar; üst üste gelen patlamalar birikmez, en güçlüsü geçerli olur.</summary>
+        public void Shake(float amount) => _shake = Mathf.Max(_shake, amount);
 
         private void LateUpdate()
         {
@@ -81,6 +89,13 @@ namespace KatKat
             Quaternion rot = Quaternion.Euler(_pitch, _yaw, 0f);
             transform.position = _focus + rot * new Vector3(0f, 0f, -_distance);
             transform.rotation = rot;
+
+            if (_shake > 0.001f)
+            {
+                transform.position += Random.insideUnitSphere * _shake;
+                _shake *= Mathf.Exp(-ShakeDecay * Time.unscaledDeltaTime);
+            }
+            else _shake = 0f;
         }
 
         private static float SnapCorner(float yaw) => Mathf.Round((yaw - 45f) / 90f) * 90f + 45f;

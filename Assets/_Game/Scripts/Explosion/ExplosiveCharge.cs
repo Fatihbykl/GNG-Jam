@@ -157,6 +157,14 @@ namespace KatKat
 
         private static void SpawnVfx(GameObject prefab, Vector3 pos)
         {
+            var light = new GameObject("BlastLight").AddComponent<Light>();
+            light.transform.position = pos;
+            light.type = LightType.Point;
+            light.color = new Color(1f, 0.65f, 0.3f);
+            light.range = 9f;
+            light.shadows = LightShadows.None;
+            light.gameObject.AddComponent<LightFlash>();
+
             if (prefab != null)
             {
                 var vfx = Instantiate(prefab, pos, Quaternion.identity);
@@ -167,6 +175,25 @@ namespace KatKat
             // Prefab yoksa basit bir parlama
             var flash = GameMaterials.CreateBox("Flash", null, pos, Vector3.one * 0.8f, new Color(1f, 0.6f, 0.1f), false);
             flash.AddComponent<FlashFade>();
+        }
+
+        /// <summary>Kısa turuncu ışık parlaması; scaled zamanla söner, ağır çekimde uzar.</summary>
+        private class LightFlash : MonoBehaviour
+        {
+            private const float Duration = 0.4f;
+            private const float Peak = 8f;
+            private Light _light;
+            private float _t;
+
+            private void Awake() => _light = GetComponent<Light>();
+
+            private void Update()
+            {
+                _t += Time.deltaTime;
+                float k = 1f - _t / Duration;
+                _light.intensity = Peak * k * k;
+                if (_t >= Duration) Destroy(gameObject);
+            }
         }
 
         private class FlashFade : MonoBehaviour
