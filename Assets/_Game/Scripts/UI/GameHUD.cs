@@ -13,13 +13,33 @@ namespace KatKat
         private const float RefHeight = 1080f;
         private const float Pad = 16f;
 
+        private const float FloatDuration = 1.6f;
+        private const float FloatRise = 50f;
+
         private static readonly List<Rect> UiRects = new List<Rect>();
         private static float _scale = 1f;
+
+        private struct FloatText
+        {
+            public Vector3 World;
+            public string Text;
+            public Color Color;
+            public float Born;
+        }
+
+        private static readonly List<FloatText> Floats = new List<FloatText>();
+
+        /// <summary>Dünyadaki bir noktadan yükselip sönen kısa yazı (ör. "−1 CAN", "İP KOPTU"). Gerçek zamanla akar.</summary>
+        public static void Float(Vector3 world, string text, Color color)
+        {
+            Floats.Add(new FloatText { World = world, Text = text, Color = color, Born = Time.unscaledTime });
+        }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
         {
             UiRects.Clear();
+            Floats.Clear();
             _scale = 1f;
         }
 
@@ -60,6 +80,7 @@ namespace KatKat
             float width = Screen.width / _scale;
 
             DrawWorldLabels();
+            DrawFloats();
             DrawStatus();
 
             switch (_gm.State)
@@ -289,6 +310,30 @@ namespace KatKat
                 GUI.Box(new Rect(p.x - size.x * 0.5f - 6f, p.y - 12f, size.x + 12f, 24f), GUIContent.none, _box);
                 GUI.Label(new Rect(p.x - size.x * 0.5f, p.y - 10f, size.x, 22f), text, _small);
             }
+        }
+
+        private void DrawFloats()
+        {
+            float now = Time.unscaledTime;
+            Floats.RemoveAll(f => now - f.Born > FloatDuration);
+            if (_cam == null) return;
+
+            var old = GUI.color;
+            foreach (var f in Floats)
+            {
+                if (!ToGui(f.World, out var p)) continue;
+                float t = (now - f.Born) / FloatDuration;
+                float alpha = t < 0.7f ? 1f : 1f - (t - 0.7f) / 0.3f;
+                p.y -= FloatRise * t;
+                var size = _tag.CalcSize(new GUIContent(f.Text));
+                var rect = new Rect(p.x - size.x * 0.5f, p.y - size.y * 0.5f, size.x, size.y);
+
+                GUI.color = new Color(0f, 0f, 0f, 0.7f * alpha);
+                GUI.Label(new Rect(rect.x + 2f, rect.y + 2f, rect.width, rect.height), f.Text, _tag);
+                GUI.color = new Color(f.Color.r, f.Color.g, f.Color.b, alpha);
+                GUI.Label(rect, f.Text, _tag);
+            }
+            GUI.color = old;
         }
 
         private bool ToGui(Vector3 world, out Vector2 gui)

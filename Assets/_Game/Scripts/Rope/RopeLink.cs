@@ -103,7 +103,16 @@ namespace KatKat
 
         public event System.Action<RopeLink> Broken;
 
+        /// <summary>Kopmaya bu oranda yaklaşınca ip nabız gibi kalınlaşıp incelir.</summary>
+        private const float DangerRatio = 0.6f;
+        private const float DangerPulse = 0.7f;
+        private const float DangerPulseSpeed = 18f;
+        private static readonly Color SnapTextColor = new Color(1f, 0.35f, 0.25f);
+
         private RopeController _rope;
+        private RopeRenderer _renderer;
+        private float _baseRadius;
+        private Vector3? _snapPoint;
         private float _armTime;
         private float _warmup;
 
@@ -188,9 +197,10 @@ namespace KatKat
             var meshRenderer = go.GetComponent<MeshRenderer>();
             if (meshRenderer == null) meshRenderer = go.AddComponent<MeshRenderer>();
             meshRenderer.sharedMaterial = material;
-            var renderer = go.AddComponent<RopeRenderer>();
-            renderer.Material = material;
-            renderer.Radius = Type.Radius;
+            _renderer = go.AddComponent<RopeRenderer>();
+            _renderer.Material = material;
+            _renderer.Radius = Type.Radius;
+            _baseRadius = Type.Radius;
 
             _rope.OnRopeCut += HandleRopeCut;
         }
@@ -228,6 +238,7 @@ namespace KatKat
         {
             if (!IsHolding) return;
             BreakMultiplier *= multiplier;
+            _baseRadius *= 1.25f;
             foreach (var r in GetComponentsInChildren<RopeRenderer>()) r.Radius *= 1.25f;
         }
 
@@ -255,10 +266,20 @@ namespace KatKat
             }
         }
 
+        /// <summary>Gerilen ip kopmaya yaklaştıkça kalınlığı nabız gibi atar (gerçek zamanla, ağır çekimde de okunur).</summary>
+        private void Update()
+        {
+            if (_renderer == null || !Armed || !IsHolding) return;
+            float danger = Mathf.InverseLerp(DangerRatio, 1f, ForceRatio);
+            float pulse = danger * (0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * DangerPulseSpeed));
+            _renderer.Radius = _baseRadius * (1f + DangerPulse * pulse);
+        }
+
         /// <summary>İpi ortasından koparır.</summary>
         public void Snap()
         {
             if (IsBroken || _rope == null) return;
+            _snapPoint = MidPoint();
             _rope.Split(Mathf.Max(0, _rope.ParticleCount / 2 - 1), 0.5f);
             if (!IsBroken) MarkBroken(); // Split reddedilirse bile mantıksal olarak kopmuş say
         }
@@ -280,7 +301,26 @@ namespace KatKat
                 if (B.Item != null) B.Item.RemoveTie();
             }
             if (_rope != null) _rope.OnRopeCut -= HandleRopeCut;
+            if (_renderer != null) _renderer.Radius = _baseRadius;
+
+            if (Armed)
+            {
+                Vector3 p = _snapPoint ?? MidPoint();
+                LastSnapPoint = p;
+                Vfx.RopeSnap(p, Type.Color);
+                GameHUD.Float(p + Vector3.up * 0.4f, "İP KOPTU", SnapTextColor);
+            }
             Broken?.Invoke(this);
+        }
+
+        /// <summary>Son kopma noktası (efekt ve kamera sarsıntısı için).</summary>
+        public Vector3 LastSnapPoint { get; private set; }
+
+        private Vector3 MidPoint()
+        {
+            if (_rope != null && _rope.Solver != null && _rope.Solver.IsInitialized && _rope.ParticleCount > 0)
+                return _rope.GetParticlePosition(_rope.ParticleCount / 2);
+            return (A.IsValid && B.IsValid) ? (A.World + B.World) * 0.5f : transform.position;
         }
 
         /// <summary>Ekran ışınının bu ipin herhangi bir parçasına yakın geçip geçmediğini sınar.</summary>

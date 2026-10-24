@@ -87,6 +87,7 @@ namespace KatKat
             Placer = gameObject.AddComponent<RopePlacer>();
             Placer.Init(this, Orbit);
             gameObject.AddComponent<GameHUD>().Init(this);
+            gameObject.AddComponent<ItemIndicators>().Init(this);
         }
 
         private void EnsureCameraAndLight()
@@ -197,6 +198,11 @@ namespace KatKat
             // Planlamadaki çöküş oku, eşyaların kayacağı yönü belirler
             Shove.Arm(ActiveFloor, Collapse.HasDirection ? Collapse.Direction : Vector3.zero, Collapse.Strength, Config);
             Sequence.Play(Config, Visuals.useCustomBlastFx ? null : ExplosionVfxPrefab, () => _settleRoutine = StartCoroutine(SettleRoutine()));
+        }
+
+        private void OnRopeBroken(RopeLink link)
+        {
+            if (link.Armed) Orbit.ShakeFrom(link.LastSnapPoint, Orbit.ShakeOnCharge * 0.4f);
         }
 
         /// <summary>Şarjlı kolon patlarken ona bağlı ipler boşa çıkar.</summary>
@@ -393,6 +399,7 @@ namespace KatKat
             }
 
             var link = RopeLink.Create(ActiveFloor.transform, type, typeIndex, a, b, length, cost, Config);
+            link.Broken += OnRopeBroken;
             Ropes.Add(link);
             return link;
         }

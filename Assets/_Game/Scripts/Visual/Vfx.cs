@@ -12,6 +12,7 @@ namespace KatKat
         private const float BlastLifetime = 6f;
         private const float ShatterLifetime = 5f;
         private const float SettleLifetime = 8f;
+        private const float SnapLifetime = 2f;
 
         private static readonly Color DustColor = new Color(0.74f, 0.69f, 0.62f, 0.55f);
         private static readonly Color FireColor = new Color(1f, 0.55f, 0.18f);
@@ -19,18 +20,28 @@ namespace KatKat
 
         private static GameContentSO _content;
         private static Transform _holder;
-        private static Material _alpha, _additive, _debris;
+        private static Material _alpha, _additive, _debris, _line;
         private static Texture2D _soft;
-        private static GameObject _blast, _scorch, _shatter, _settle;
+        private static GameObject _blast, _scorch, _shatter, _settle, _snap;
+
+        /// <summary>Çizgiler için dokusuz, ışıksız, köşe rengini kullanan saydam materyal.</summary>
+        public static Material LineMaterial
+        {
+            get
+            {
+                EnsureHolder();
+                return _line;
+            }
+        }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
         {
             _content = null;
             _holder = null;
-            _alpha = _additive = _debris = null;
+            _alpha = _additive = _debris = _line = null;
             _soft = null;
-            _blast = _scorch = _shatter = _settle = null;
+            _blast = _scorch = _shatter = _settle = _snap = null;
         }
 
         public static void Init(GameContentSO content) => _content = content;
@@ -58,6 +69,16 @@ namespace KatKat
                 var shape = ps.shape;
                 shape.scale = Vector3.Max(bounds.size, Vector3.one * 0.3f);
             }
+        }
+
+        /// <summary>İp kopunca uçuşan lifler ve kısa bir parlama; lifler ipin renginde.</summary>
+        public static void RopeSnap(Vector3 pos, Color ropeColor)
+        {
+            var go = Spawn(ref _snap, BuildSnap, pos, SnapLifetime);
+            var fibers = go.transform.Find("Fibers");
+            if (fibers == null) return;
+            var main = fibers.GetComponent<ParticleSystem>().main;
+            main.startColor = ropeColor;
         }
 
         /// <summary>Kat çöktükten sonra zeminde yayılan alçak toz bulutu.</summary>
@@ -134,6 +155,27 @@ namespace KatKat
             Box(dust);
             var main = dust.main;
             main.gravityModifier = 0f;
+            return root;
+        }
+
+        private static GameObject BuildSnap()
+        {
+            var root = NewTemplate("RopeSnapFx");
+
+            var flash = Make(root, "Flash", _additive);
+            Main(flash, 0.08f, 0f, 0.7f, new Color(1f, 0.95f, 0.85f));
+            Burst(flash, 1);
+            Fade(flash, 0f, 1f);
+
+            var fibers = Make(root, "Fibers", _alpha);
+            Main(fibers, new Vector2(0.3f, 0.7f), new Vector2(2f, 5.5f), new Vector2(0.03f, 0.06f), Color.white, gravity: 0.8f);
+            Burst(fibers, 16);
+            Sphere(fibers, 0.05f);
+            Fade(fibers, 0f, 1f);
+            var r = fibers.GetComponent<ParticleSystemRenderer>();
+            r.renderMode = ParticleSystemRenderMode.Stretch;
+            r.velocityScale = 0.05f;
+            r.lengthScale = 1.5f;
             return root;
         }
 
@@ -348,6 +390,8 @@ namespace KatKat
             _additive.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
             _additive.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.One);
             _additive.SetColor("_BaseColor", new Color(3f, 3f, 3f, 1f));
+
+            _line = new Material(template) { name = "Vfx_Line" };
 
             // Beton parçaları: binayla aynı ışıklı materyal
             _debris = GameMaterials.Get(GameMaterials.Concrete);
