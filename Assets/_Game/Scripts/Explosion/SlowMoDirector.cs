@@ -59,6 +59,7 @@ namespace KatKat
             ChargesLeft--;
             IsActive = true;
             RemainingRealtime = _gm.Config.slowMoDuration;
+            AudioDirector.Play(Sound.SlowMoEnter);
             return true;
         }
 
@@ -74,6 +75,7 @@ namespace KatKat
                 if (RemainingRealtime <= 0f)
                 {
                     IsActive = false;
+                    AudioDirector.Play(Sound.SlowMoExit);
                     _cooldown = AutoCooldown;
                 }
                 return;

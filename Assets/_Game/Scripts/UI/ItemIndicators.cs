@@ -99,6 +99,7 @@ namespace KatKat
                 {
                     zone.Flash(p);
                     if (item == null) continue;
+                    AudioDirector.Play(Sound.ZoneWarning, p);
                     bool big = item.Size == ItemSize.Big;
                     GameHUD.Float(p + Vector3.up, big ? "−1 CAN" : $"+{FloorScorer.SmallItemPenalty} ceza",
                         big ? OutColor : PenaltyColor);

@@ -119,6 +119,7 @@ namespace KatKat
                     }
                     else if (_gm.TryCreateRope(_pending, target, _gm.SelectedRopeType, out string error) != null)
                     {
+                        AudioDirector.Play(Sound.RopePlace);
                         Cancel();
                     }
                     else

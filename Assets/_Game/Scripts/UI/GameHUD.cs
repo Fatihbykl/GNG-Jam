@@ -54,11 +54,26 @@ namespace KatKat
             return false;
         }
 
+        private const float RowRevealInterval = 0.28f;
+        private const float RowCountDuration = 0.35f;
+        private const float BannerDuration = 2.2f;
+
+        private static readonly Color Accent = new Color(1f, 0.78f, 0.18f);
+        private static readonly Color Good = new Color(0.45f, 0.95f, 0.5f);
+        private static readonly Color Warn = new Color(1f, 0.78f, 0.25f);
+        private static readonly Color Bad = new Color(1f, 0.35f, 0.3f);
+
         private GameManager _gm;
         private Camera _cam;
         private bool _debug;
-        private GUIStyle _box, _label, _title, _titleCenter, _big, _small, _button, _tag;
-        private Texture2D _boxTex, _barTex;
+        private GUIStyle _box, _label, _title, _titleCenter, _big, _small, _button, _buttonOn, _buttonCenter, _tag, _banner, _hearts;
+        private Texture2D _barTex;
+
+        private GameState _lastState = (GameState)(-1);
+        private float _resultsStart;
+        private int _revealedRows;
+        private int _bannerFloor = -1;
+        private float _bannerStart = -10f;
 
         public void Init(GameManager gm) => _gm = gm;
 
@@ -66,6 +81,26 @@ namespace KatKat
         {
             var kb = Keyboard.current;
             if (kb != null && kb.f1Key.wasPressedThisFrame) _debug = !_debug;
+            if (_gm == null || _gm.Run == null) return;
+
+            var state = _gm.State;
+            if (state != _lastState)
+            {
+                if (state == GameState.Results)
+                {
+                    _resultsStart = Time.unscaledTime;
+                    _revealedRows = 0;
+                }
+                _lastState = state;
+            }
+
+            // Yeni kata geçişte büyük başlık (aynı katı sıfırlamak başlık göstermez)
+            if (state == GameState.Planning && _gm.FloorNumber != _bannerFloor)
+            {
+                _bannerFloor = _gm.FloorNumber;
+                _bannerStart = Time.unscaledTime;
+                AudioDirector.Play(Sound.FloorStart);
+            }
         }
 
         private void OnGUI()
@@ -93,6 +128,7 @@ namespace KatKat
             }
 
             DrawSlowMo(width);
+            DrawBanner(width);
             DrawMessage(width);
             DrawHover();
             DrawHelp(width);
@@ -105,8 +141,8 @@ namespace KatKat
             float x = rect.x + 14f, y = rect.y + 10f, w = rect.width - 28f;
 
             GUI.Label(new Rect(x, y, w, 36f), $"KAT {_gm.FloorNumber + 1}", _title);
-            GUI.Label(new Rect(x + 150f, y + 6f, w - 150f, 30f),
-                $"Can {_gm.Run.Lives}/{cfg.startLives}   Skor {_gm.Run.FloorsDescended}", _label);
+            DrawHearts(new Rect(x + 130f, y + 2f, 130f, 34f), _gm.Run.Lives, cfg.startLives);
+            GUI.Label(new Rect(x + 262f, y + 6f, w - 262f, 30f), $"Skor {_gm.Run.FloorsDescended}", _label);
             y += 42f;
 
             var budget = _gm.Budget;
@@ -120,8 +156,10 @@ namespace KatKat
             {
                 var t = _gm.RopeTypes[i];
                 bool selected = i == _gm.SelectedRopeType;
-                string text = $"{(selected ? "> " : "   ")}[{i + 1}] {t.DisplayName}   {t.CostPerMeter:0.0}/m   ~{t.BreakForce:0} N";
-                if (GUI.Button(new Rect(x, y, w, 30f), text, _button)) _gm.SelectRopeType(i);
+                string text = $"[{i + 1}]  {t.DisplayName}   {t.CostPerMeter:0.0}/m   ~{t.BreakForce:0} N";
+                var r = new Rect(x, y, w, 30f);
+                if (Button(r, text, selected ? _buttonOn : _button)) _gm.SelectRopeType(i);
+                DrawSwatch(new Rect(r.xMax - 18f, r.y + 9f, 10f, 12f), t.Color);
                 y += 34f;
             }
 
@@ -148,20 +186,20 @@ namespace KatKat
             {
                 var charge = seq.Order[i];
                 GUI.Label(new Rect(x, y + 4f, 120f, 30f), $"{i + 1}.  Sıra {charge.Label}", _label);
-                if (GUI.Button(new Rect(x + 125f, y, 34f, 32f), "↑", _button)) seq.Move(i, -1);
-                if (GUI.Button(new Rect(x + 163f, y, 34f, 32f), "↓", _button)) seq.Move(i, 1);
-                if (GUI.Button(new Rect(x + 215f, y, 34f, 32f), "–", _button))
+                if (Button(new Rect(x + 125f, y, 34f, 32f), "↑", _buttonCenter)) seq.Move(i, -1);
+                if (Button(new Rect(x + 163f, y, 34f, 32f), "↓", _buttonCenter)) seq.Move(i, 1);
+                if (Button(new Rect(x + 215f, y, 34f, 32f), "–", _buttonCenter))
                     charge.Delay = Mathf.Max(0f, charge.Delay - 0.2f);
                 GUI.Label(new Rect(x + 252f, y + 4f, 60f, 30f), $"{charge.Delay:0.0} sn", _label);
-                if (GUI.Button(new Rect(x + 315f, y, 34f, 32f), "+", _button))
+                if (Button(new Rect(x + 315f, y, 34f, 32f), "+", _buttonCenter))
                     charge.Delay = Mathf.Min(ExplosiveCharge.MaxDelay, charge.Delay + 0.2f);
                 y += 40f;
             }
 
             y += 10f;
-            if (GUI.Button(new Rect(x, y, w, 46f), "PATLAT   [Enter]", _big)) _gm.Detonate();
+            if (Button(new Rect(x, y, w, 46f), "PATLAT   [Enter]", _big)) _gm.Detonate();
             y += 52f;
-            if (GUI.Button(new Rect(x, y, w, 32f), "Katı sıfırla (ipler kalır)   [R]", _button)) _gm.QuickReset();
+            if (Button(new Rect(x, y, w, 32f), "Katı sıfırla (ipler kalır)   [R]", _button)) _gm.QuickReset();
         }
 
         private void DrawRunningPanel(float width)
@@ -176,32 +214,50 @@ namespace KatKat
             y += 40f;
             GUI.Label(new Rect(x, y, w, 26f), $"[Boşluk] Ağır çekim  ({_gm.SlowMo.ChargesLeft} hak)", _label);
             y += 36f;
-            if (GUI.Button(new Rect(x, y, w, 32f), "Planlamaya dön   [R]", _button)) _gm.QuickReset();
+            if (Button(new Rect(x, y, w, 32f), "Planlamaya dön   [R]", _button)) _gm.QuickReset();
         }
 
         private void DrawResults(float width)
         {
             var r = _gm.LastResult;
-            var rect = Panel(new Rect(width * 0.5f - 250f, 220f, 500f, 380f));
-            float x = rect.x + 20f, y = rect.y + 14f, w = rect.width - 40f;
+            var rect = Panel(new Rect(width * 0.5f - 260f, 200f, 520f, 420f));
+            float x = rect.x + 24f, y = rect.y + 16f, w = rect.width - 48f;
+            float t = Time.unscaledTime - _resultsStart;
 
             GUI.Label(new Rect(x, y, w, 36f), $"KAT {_gm.FloorNumber + 1} SONUCU", _title);
-            y += 48f;
-            Row(ref y, x, w, "Kurtarılan eşya", $"{r.SavedItems} / {r.TotalItems}");
-            Row(ref y, x, w, $"Bölge dışı parça  (×{FloorScorer.PiecePenalty})", r.OutPieces.ToString());
-            Row(ref y, x, w, $"Bölge dışı küçük eşya  (×{FloorScorer.SmallItemPenalty})", r.OutSmallItems.ToString());
-            Row(ref y, x, w, $"Komşu binaya çarpan  (×{FloorScorer.NeighborPenalty})", r.NeighborHits.ToString());
-            Row(ref y, x, w, "Bölge dışı büyük eşya", r.OutBigItems > 0 ? $"{r.OutBigItems}  →  −{r.LivesLost} can" : "0");
-            y += 8f;
-            GUI.Label(new Rect(x, y, w, 30f),
-                $"Ceza {r.Penalty}  →  bütçeden −{r.Penalty * _gm.Config.penaltyBudgetCost:0.0}", _label);
-            y += 30f;
-            GUI.Label(new Rect(x, y, w, 30f),
-                $"Devreden ip: {_gm.Budget.Remaining:0.0}   Sonraki kat bütçesi: {_gm.NextFloorBudget():0.0}", _label);
-            y += 44f;
+            y += 50f;
 
-            if (GUI.Button(new Rect(x, y, w * 0.55f, 46f), "Devam   [Enter]", _big)) _gm.ContinueAfterResults();
-            if (GUI.Button(new Rect(x + w * 0.58f, y, w * 0.42f, 46f), "Tekrar dene [R]", _button)) _gm.QuickReset();
+            int row = 0;
+            ResultRow(ref y, x, w, t, row++, "Kurtarılan eşya", r.SavedItems, $" / {r.TotalItems}",
+                r.SavedItems == r.TotalItems ? Good : Warn, false);
+            ResultRow(ref y, x, w, t, row++, $"Bölge dışı parça  (×{FloorScorer.PiecePenalty})", r.OutPieces, "",
+                r.OutPieces == 0 ? Good : Warn, false);
+            ResultRow(ref y, x, w, t, row++, $"Bölge dışı küçük eşya  (×{FloorScorer.SmallItemPenalty})", r.OutSmallItems, "",
+                r.OutSmallItems == 0 ? Good : Warn, false);
+            ResultRow(ref y, x, w, t, row++, $"Komşu binaya çarpan  (×{FloorScorer.NeighborPenalty})", r.NeighborHits, "",
+                r.NeighborHits == 0 ? Good : Bad, false);
+            ResultRow(ref y, x, w, t, row++, "Bölge dışı büyük eşya", r.OutBigItems,
+                r.LivesLost > 0 ? $"   →  −{r.LivesLost} can" : "", r.OutBigItems == 0 ? Good : Bad, r.LivesLost > 0);
+
+            // Özet, tüm satırlar geldikten sonra belirir
+            if (t >= row * RowRevealInterval)
+            {
+                y += 10f;
+                var old = GUI.color;
+                GUI.color = r.Penalty == 0 ? Good : r.Penalty <= 5 ? Warn : Bad;
+                GUI.Label(new Rect(x, y, w, 34f),
+                    $"Ceza {r.Penalty}   →   bütçeden −{r.Penalty * _gm.Config.penaltyBudgetCost:0.0}", _title);
+                GUI.color = old;
+                y += 40f;
+                GUI.Label(new Rect(x, y, w, 28f),
+                    $"Devreden ip: {_gm.Budget.Remaining:0.0}     Sonraki kat bütçesi: {_gm.NextFloorBudget():0.0}", _label);
+                y += 38f;
+            }
+            else y += 88f;
+            y += 30f;
+
+            if (Button(new Rect(x, y, w * 0.55f, 48f), "Devam   [Enter]", _big)) _gm.ContinueAfterResults();
+            if (Button(new Rect(x + w * 0.58f, y, w * 0.42f, 48f), "Tekrar dene  [R]", _button)) _gm.QuickReset();
         }
 
         private void DrawGameOver(float width)
@@ -212,7 +268,7 @@ namespace KatKat
             y += 52f;
             GUI.Label(new Rect(x, y, w, 30f), $"{_gm.Run.FloorsDescended} kat indin.   Toplam ceza: {_gm.Run.TotalPenalty}", _label);
             y += 60f;
-            if (GUI.Button(new Rect(x, y, w, 46f), "Yeni oyun   [Enter]", _big)) _gm.NewRun();
+            if (Button(new Rect(x, y, w, 46f), "Yeni oyun   [Enter]", _big)) _gm.NewRun();
         }
 
         private void DrawSlowMo(float width)
@@ -220,7 +276,10 @@ namespace KatKat
             if (!_gm.SlowMo.IsActive) return;
             var rect = new Rect(width * 0.5f - 300f, Pad, 600f, 86f);
             GUI.Box(rect, GUIContent.none, _box);
+            var oldColor = GUI.color;
+            GUI.color = Color.Lerp(Color.white, Accent, 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 6f));
             GUI.Label(new Rect(rect.x, rect.y + 6f, rect.width, 40f), "AĞIR ÇEKİM", _titleCenter);
+            GUI.color = oldColor;
             GUI.Label(new Rect(rect.x, rect.y + 46f, rect.width, 30f),
                 $"İpe tıkla: destekle ({_gm.Config.reinforceCost:0.0})   •   Uçan eşyaya tıkla: ip at", _tag);
         }
@@ -343,11 +402,85 @@ namespace KatKat
             return sp.z > 0f;
         }
 
-        private void Row(ref float y, float x, float w, string label, string value)
+        /// <summary>Tıklandığında ses çalan buton.</summary>
+        private static bool Button(Rect rect, string text, GUIStyle style)
         {
-            GUI.Label(new Rect(x, y, w * 0.72f, 28f), label, _label);
-            GUI.Label(new Rect(x + w * 0.72f, y, w * 0.28f, 28f), value, _label);
-            y += 32f;
+            if (!GUI.Button(rect, text, style)) return false;
+            AudioDirector.Play(Sound.UiClick);
+            return true;
+        }
+
+        /// <summary>Sonuç satırı: sırayla belirir, sayı sıfırdan sayarak gelir; geldiği anda ses çalar.</summary>
+        private void ResultRow(ref float y, float x, float w, float t, int index, string label, int value, string suffix,
+            Color color, bool lifeLost)
+        {
+            float start = index * RowRevealInterval;
+            if (t < start)
+            {
+                y += 34f;
+                return;
+            }
+
+            if (index >= _revealedRows)
+            {
+                _revealedRows = index + 1;
+                AudioDirector.Play(lifeLost ? Sound.LifeLost : Sound.ResultsTick);
+            }
+
+            float k = Mathf.Clamp01((t - start) / RowCountDuration);
+            float alpha = Mathf.Clamp01((t - start) / 0.15f);
+            int shown = Mathf.RoundToInt(Mathf.Lerp(0f, value, 1f - (1f - k) * (1f - k)));
+
+            var old = GUI.color;
+            GUI.color = new Color(1f, 1f, 1f, alpha);
+            GUI.Label(new Rect(x + (1f - alpha) * 20f, y, w * 0.68f, 30f), label, _label);
+            GUI.color = new Color(color.r, color.g, color.b, alpha);
+            GUI.Label(new Rect(x + w * 0.68f, y, w * 0.32f, 30f), shown + suffix, _label);
+            GUI.color = old;
+            y += 34f;
+        }
+
+        private void DrawHearts(Rect rect, int lives, int max)
+        {
+            var old = GUI.color;
+            for (int i = 0; i < max; i++)
+            {
+                GUI.color = i < lives ? Bad : new Color(1f, 1f, 1f, 0.22f);
+                GUI.Label(new Rect(rect.x + i * 30f, rect.y, 30f, rect.height), "♥", _hearts);
+            }
+            GUI.color = old;
+        }
+
+        private void DrawSwatch(Rect rect, Color color)
+        {
+            var old = GUI.color;
+            GUI.color = color;
+            GUI.DrawTexture(rect, _barTex);
+            GUI.color = old;
+        }
+
+        /// <summary>Yeni kat başlarken ortada büyüyüp sönen "KAT N" başlığı.</summary>
+        private void DrawBanner(float width)
+        {
+            float t = (Time.unscaledTime - _bannerStart) / BannerDuration;
+            if (t < 0f || t > 1f || _gm.State != GameState.Planning) return;
+
+            float alpha = t < 0.12f ? t / 0.12f : t > 0.75f ? 1f - (t - 0.75f) / 0.25f : 1f;
+            float scale = Mathf.Lerp(1.15f, 1f, Mathf.Clamp01(t / 0.2f));
+            var rect = new Rect(0f, RefHeight * 0.32f, width, 120f);
+            string text = $"KAT {_gm.FloorNumber + 1}";
+
+            var oldMatrix = GUI.matrix;
+            GUIUtility.ScaleAroundPivot(new Vector2(scale, scale), new Vector2(width * 0.5f, rect.center.y) * _scale);
+            var old = GUI.color;
+            GUI.color = new Color(0f, 0f, 0f, 0.6f * alpha);
+            GUI.Label(new Rect(rect.x + 4f, rect.y + 4f, rect.width, rect.height), text, _banner);
+            GUI.color = new Color(Accent.r, Accent.g, Accent.b, alpha);
+            GUI.Label(rect, text, _banner);
+            GUI.color = new Color(1f, 1f, 1f, alpha * 0.9f);
+            GUI.Label(new Rect(rect.x, rect.yMax - 8f, rect.width, 32f), "Planla  •  Bağla  •  Patlat", _tag);
+            GUI.color = old;
+            GUI.matrix = oldMatrix;
         }
 
         private Rect Panel(Rect rect)
@@ -371,19 +504,77 @@ namespace KatKat
         {
             if (_box != null) return;
 
-            _boxTex = new Texture2D(1, 1);
-            _boxTex.SetPixel(0, 0, new Color(0.08f, 0.09f, 0.12f, 0.82f));
-            _boxTex.Apply();
             _barTex = Texture2D.whiteTexture;
+            var font = _gm.Content != null ? _gm.Content.UiFont : null;
+            var dark = new Color(0.1f, 0.09f, 0.07f);
 
-            _box = new GUIStyle { normal = { background = _boxTex } };
-            _label = new GUIStyle(GUI.skin.label) { fontSize = 19, normal = { textColor = Color.white } };
-            _small = new GUIStyle(_label) { fontSize = 16, wordWrap = true, normal = { textColor = new Color(0.85f, 0.87f, 0.9f) } };
-            _title = new GUIStyle(_label) { fontSize = 28, fontStyle = FontStyle.Bold };
+            _box = new GUIStyle
+            {
+                normal = { background = Rounded(new Color(0.07f, 0.08f, 0.11f, 0.86f), new Color(1f, 0.78f, 0.18f, 0.28f), 10) },
+                border = new RectOffset(12, 12, 12, 12)
+            };
+            _label = new GUIStyle(GUI.skin.label) { font = font, fontSize = 19, normal = { textColor = Color.white } };
+            _small = new GUIStyle(_label) { fontSize = 16, wordWrap = true, normal = { textColor = new Color(0.82f, 0.85f, 0.9f) } };
+            _title = new GUIStyle(_label) { fontSize = 28, fontStyle = FontStyle.Bold, normal = { textColor = new Color(1f, 0.96f, 0.88f) } };
             _titleCenter = new GUIStyle(_title) { alignment = TextAnchor.UpperCenter };
             _tag = new GUIStyle(_label) { alignment = TextAnchor.MiddleCenter, fontSize = 18, fontStyle = FontStyle.Bold };
-            _button = new GUIStyle(GUI.skin.button) { fontSize = 17, alignment = TextAnchor.MiddleLeft, padding = new RectOffset(10, 6, 4, 4) };
-            _big = new GUIStyle(GUI.skin.button) { fontSize = 24, fontStyle = FontStyle.Bold };
+            _banner = new GUIStyle(_label) { alignment = TextAnchor.MiddleCenter, fontSize = 96, fontStyle = FontStyle.Bold };
+            _hearts = new GUIStyle(_label) { fontSize = 28, alignment = TextAnchor.MiddleLeft };
+
+            _button = ButtonStyle(font, 17, TextAnchor.MiddleLeft, new Color(0.17f, 0.19f, 0.25f, 0.95f),
+                new Color(0.25f, 0.28f, 0.36f, 0.98f), Accent, Color.white, dark);
+            _buttonOn = ButtonStyle(font, 17, TextAnchor.MiddleLeft, new Color(0.36f, 0.3f, 0.12f, 0.98f),
+                new Color(0.45f, 0.38f, 0.15f, 1f), Accent, Accent, dark);
+            _buttonOn.fontStyle = FontStyle.Bold;
+            _buttonCenter = new GUIStyle(_button) { alignment = TextAnchor.MiddleCenter, padding = new RectOffset(0, 0, 2, 2) };
+            _big = ButtonStyle(font, 24, TextAnchor.MiddleCenter, Accent, new Color(1f, 0.86f, 0.38f),
+                new Color(0.85f, 0.6f, 0.1f), dark, dark);
+            _big.fontStyle = FontStyle.Bold;
+        }
+
+        private static GUIStyle ButtonStyle(Font font, int size, TextAnchor align, Color normal, Color hover, Color active,
+            Color text, Color activeText)
+        {
+            var edge = new Color(1f, 1f, 1f, 0.08f);
+            return new GUIStyle
+            {
+                font = font,
+                fontSize = size,
+                alignment = align,
+                padding = new RectOffset(12, 8, 4, 4),
+                border = new RectOffset(9, 9, 9, 9),
+                normal = { background = Rounded(normal, edge, 7), textColor = text },
+                hover = { background = Rounded(hover, edge, 7), textColor = text },
+                active = { background = Rounded(active, edge, 7), textColor = activeText },
+                focused = { background = Rounded(normal, edge, 7), textColor = text }
+            };
+        }
+
+        /// <summary>Kenarı yumuşatılmış, ince çerçeveli yuvarlak köşeli doku (9-slice ile esnetilir).</summary>
+        private static Texture2D Rounded(Color fill, Color border, int radius)
+        {
+            int size = radius * 2 + 4;
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false)
+                { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            var px = new Color[size * size];
+            float half = size * 0.5f;
+            for (int y = 0; y < size; y++)
+            for (int x = 0; x < size; x++)
+            {
+                // Yuvarlak köşeli dikdörtgene işaretli uzaklık (içeride negatif)
+                float qx = Mathf.Abs(x + 0.5f - half) - (half - radius);
+                float qy = Mathf.Abs(y + 0.5f - half) - (half - radius);
+                float outside = new Vector2(Mathf.Max(qx, 0f), Mathf.Max(qy, 0f)).magnitude;
+                float d = outside + Mathf.Min(Mathf.Max(qx, qy), 0f) - radius;
+                float cover = Mathf.Clamp01(0.5f - d);
+                float edge = Mathf.Clamp01(1.5f - Mathf.Abs(d + 1f));
+                var c = Color.Lerp(fill, new Color(border.r, border.g, border.b, 1f), border.a * edge);
+                c.a = Mathf.Max(fill.a, border.a * edge) * cover;
+                px[y * size + x] = c;
+            }
+            tex.SetPixels(px);
+            tex.Apply();
+            return tex;
         }
     }
 }

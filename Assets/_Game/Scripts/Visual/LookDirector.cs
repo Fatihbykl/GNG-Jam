@@ -23,6 +23,9 @@ namespace KatKat
         private Vignette _vignette;
         private ChromaticAberration _chromatic;
         private float _slowMoWeight;
+
+        /// <summary>Ağır çekim efektinin anlık gücü (0–1); ses filtresi de bunu izler.</summary>
+        public float SlowMoWeight => _slowMoWeight;
         private float _baseFov;
 
         public void Init(GameManager gm, Camera cam)

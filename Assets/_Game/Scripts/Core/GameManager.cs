@@ -110,6 +110,7 @@ namespace KatKat
             // Güneş, ortam ışığı, gökyüzü, sis ve post-processing
             Look = gameObject.AddComponent<LookDirector>();
             Look.Init(this, cam);
+            gameObject.AddComponent<AudioDirector>().Init(this, Content.Sounds, cam);
             Vfx.Init(Content);
         }
 
@@ -193,6 +194,7 @@ namespace KatKat
             foreach (var link in Ropes) link.Arm();
 
             State = GameState.Detonating;
+            AudioDirector.Play(Sound.Detonate);
             SlowMo.Begin(Config.slowMoCharges);
             Orbit.SetCinematic(true);
             // Planlamadaki çöküş oku, eşyaların kayacağı yönü belirler
@@ -286,6 +288,7 @@ namespace KatKat
             if (Run.Lives <= 0)
             {
                 State = GameState.GameOver;
+                AudioDirector.Play(Sound.GameOver);
                 return;
             }
 
@@ -410,6 +413,7 @@ namespace KatKat
             Budget.Refund(link.Cost);
             Ropes.Remove(link);
             Destroy(link.gameObject);
+            AudioDirector.Play(Sound.RopeRemove);
         }
 
         /// <summary>Ağır çekimde: gergin ipi destekler.</summary>
@@ -422,6 +426,7 @@ namespace KatKat
                 return;
             }
             link.Reinforce(Config.reinforceMultiplier);
+            AudioDirector.Play(Sound.RopeReinforce);
             ShowMessage($"{link.Type.DisplayName} desteklendi");
         }
 
@@ -458,6 +463,7 @@ namespace KatKat
                 return;
             }
             link.Arm();
+            AudioDirector.Play(Sound.RopePlace, hitPoint);
             ShowMessage($"{item.DisplayName} yakalandı!");
         }
 

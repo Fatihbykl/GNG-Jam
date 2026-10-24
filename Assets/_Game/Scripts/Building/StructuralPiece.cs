@@ -64,6 +64,11 @@ namespace KatKat
 
         public Vector3 WorldOutward => transform.TransformDirection(LocalOutward);
 
+        private void OnCollisionEnter(Collision collision)
+        {
+            if (Body != null && !Body.isKinematic) AudioDirector.Impact(Sound.DebrisImpact, collision);
+        }
+
         public static FixedJoint Join(StructuralPiece a, Rigidbody b, StructuralPiece bPiece, float breakForce,
             float breakTorque)
         {

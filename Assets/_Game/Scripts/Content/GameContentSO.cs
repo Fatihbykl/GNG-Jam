@@ -36,6 +36,12 @@ namespace KatKat
         public Material FadeMaterial;
         [Tooltip("Patlama, toz ve kıvılcım efektleri için URP Particles/Unlit şablonu (M_ParticleTemplate).")]
         public Material ParticleMaterial;
+        [Tooltip("Arayüz yazı tipi (isteğe bağlı). Boşsa Unity'nin varsayılan yazı tipi kullanılır.")]
+        public Font UiFont;
+
+        [Header("Ses")]
+        [Tooltip("Tüm oyun sesleri (Data/SoundBank). Boş klipler sessizce atlanır.")]
+        public SoundBankSO Sounds;
 
         [Header("Ölçekleme")]
         [Tooltip("Açık: yapı prefabları yuvalarına esnetilir (her boyuttaki model çalışır).\n" +

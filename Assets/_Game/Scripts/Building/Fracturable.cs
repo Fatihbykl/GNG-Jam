@@ -121,7 +121,9 @@ namespace KatKat
                 else bounds.Encapsulate(r.bounds);
                 any = true;
             }
-            if (any) Vfx.Shatter(bounds);
+            if (!any) return;
+            Vfx.Shatter(bounds);
+            AudioDirector.Play(Sound.ConcreteBreak, bounds.center);
         }
 
         private static float Volume(MeshFilter mf)

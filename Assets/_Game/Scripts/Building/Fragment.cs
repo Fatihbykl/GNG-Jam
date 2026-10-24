@@ -10,6 +10,8 @@ namespace KatKat
     {
         public int Group;
 
+        private void OnCollisionEnter(Collision collision) => AudioDirector.Impact(Sound.DebrisImpact, collision);
+
         public static void Mark(GameObject go, StructuralPiece source) => go.AddComponent<Fragment>().Group = source.GetInstanceID();
     }
 }

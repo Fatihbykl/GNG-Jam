@@ -40,6 +40,11 @@ namespace KatKat
         /// <summary>Parlama için renderer listesini yeniler (gevşek parçalar ayrıldıktan sonra çağrılır).</summary>
         public void RefreshRenderers() => _renderers = GetComponentsInChildren<Renderer>();
 
+        private void OnCollisionEnter(Collision collision)
+        {
+            if (!Body.isKinematic) AudioDirector.Impact(Sound.ItemImpact, collision);
+        }
+
         public void AddTie()
         {
             _tieCount++;

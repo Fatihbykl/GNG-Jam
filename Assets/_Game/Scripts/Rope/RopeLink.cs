@@ -308,6 +308,7 @@ namespace KatKat
                 Vector3 p = _snapPoint ?? MidPoint();
                 LastSnapPoint = p;
                 Vfx.RopeSnap(p, Type.Color);
+                AudioDirector.Play(Sound.RopeSnap, p);
                 GameHUD.Float(p + Vector3.up * 0.4f, "İP KOPTU", SnapTextColor);
             }
             Broken?.Invoke(this);

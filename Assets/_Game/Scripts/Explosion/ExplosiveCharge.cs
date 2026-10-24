@@ -158,6 +158,7 @@ namespace KatKat
         /// <param name="prefab">Özel efekt prefabı; boşsa kodla kurulan <see cref="Vfx.Blast"/> oynar.</param>
         private void SpawnVfx(GameObject prefab, Vector3 pos)
         {
+            AudioDirector.Play(Sound.Explosion, pos);
             var light = new GameObject("BlastLight").AddComponent<Light>();
             light.transform.position = pos;
             light.type = LightType.Point;
