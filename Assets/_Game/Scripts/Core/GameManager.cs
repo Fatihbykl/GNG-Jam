@@ -46,6 +46,7 @@ namespace KatKat
         public SafeZone Zone { get; private set; }
         public DetonationSequence Sequence { get; private set; }
         public CollapsePreview Collapse { get; private set; }
+        public CollapseShove Shove { get; private set; }
         public SlowMoDirector SlowMo { get; private set; }
         public RopePlacer Placer { get; private set; }
         public OrbitCamera Orbit { get; private set; }
@@ -76,6 +77,7 @@ namespace KatKat
             Sequence.ChargeFiring += OnChargeFiring;
             Collapse = gameObject.AddComponent<CollapsePreview>();
             Collapse.Init(this);
+            Shove = gameObject.AddComponent<CollapseShove>();
             SlowMo = gameObject.AddComponent<SlowMoDirector>();
             SlowMo.Init(this);
             Placer = gameObject.AddComponent<RopePlacer>();
@@ -196,12 +198,15 @@ namespace KatKat
             State = GameState.Detonating;
             SlowMo.Begin(Config.slowMoCharges);
             Orbit.SetCinematic(true);
+            // Planlamadaki çöküş oku, eşyaların kayacağı yönü belirler
+            Shove.Arm(ActiveFloor, Collapse.HasDirection ? Collapse.Direction : Vector3.zero, Collapse.Strength, Config);
             Sequence.Play(Config, ExplosionVfxPrefab, () => _settleRoutine = StartCoroutine(SettleRoutine()));
         }
 
         /// <summary>Şarjlı kolon patlarken ona bağlı ipler boşa çıkar.</summary>
         private void OnChargeFiring(ExplosiveCharge charge)
         {
+            Shove.OnChargeFired();
             int released = 0;
             foreach (var link in Ropes)
             {
@@ -308,6 +313,7 @@ namespace KatKat
             if (_settleRoutine != null) StopCoroutine(_settleRoutine);
             _settleRoutine = null;
             if (Sequence != null) Sequence.Stop();
+            if (Shove != null) Shove.Stop();
             if (SlowMo != null) SlowMo.End();
             if (Orbit != null) Orbit.SetCinematic(false);
             TimeController.ResetTime();

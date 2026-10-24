@@ -42,6 +42,18 @@ namespace KatKat
         public float explosionRadius = 2.5f;
         public float explosionUpward = 0.2f;
         public float ropeBlastPower = 40f;
+        [Tooltip("Şarj yarıçapındaki eşyalara ek yatay savurma (m/s), uzaklıkla azalır.")]
+        public float itemBlastKick = 2.5f;
+
+        [Header("Çöküş eğimi (eşyaları kaydırır)")]
+        [Tooltip("Tam tek yönlü çöküşte eşyalara uygulanan yatay ivme (m/s²). Sürtünmeyi yenmesi için ~6'nın üstünde olmalı.")]
+        public float tiltAccel = 10f;
+        [Tooltip("Zayıf çöküş okunda ivmenin kalan oranı (ok hiç yoksa eğim de yok).")]
+        [Range(0f, 1f)] public float tiltMinShare = 0.55f;
+        [Tooltip("Her şarjdan sonra eğimin süresi (s, ağır çekimde yavaşlar).")]
+        public float tiltDuration = 1.2f;
+        [Tooltip("Büyük (ağır) eşyalar daha az kayar.")]
+        [Range(0f, 1f)] public float tiltBigItemScale = 0.8f;
 
         [Header("Parçalanma (Cell Fracture modelleri)")]
         [Tooltip("Kırılabilir duvar/tavan bu bağıl hızın (m/s) üstündeki çarpmada parçalanır.")]

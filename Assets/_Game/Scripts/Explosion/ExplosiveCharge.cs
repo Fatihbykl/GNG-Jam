@@ -90,6 +90,16 @@ namespace KatKat
                     if (rb == null || rb.isKinematic || !hit.Add(rb)) continue;
                     rb.AddExplosionForce(config.explosionKick, pos, config.explosionRadius, config.explosionUpward,
                         ForceMode.VelocityChange);
+
+                    // Eşyalar zeminde sürtünmeyle hemen durur; yatay ek savurma onları gerçekten kaydırır.
+                    if (rb.TryGetComponent<Item>(out _))
+                    {
+                        Vector3 away = rb.worldCenterOfMass - pos;
+                        away.y = 0f;
+                        float falloff = 1f - Mathf.Clamp01(away.magnitude / config.explosionRadius);
+                        if (away.sqrMagnitude > 1e-6f)
+                            rb.AddForce(away.normalized * (config.itemBlastKick * falloff), ForceMode.VelocityChange);
+                    }
                 }
 
                 foreach (var rope in RopeController.AllRopes)
