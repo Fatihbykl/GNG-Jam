@@ -75,14 +75,14 @@ namespace KatKat
                 if (column == null) continue;
                 Vector3 pos = column.WorldCenter;
                 SpawnVfx(vfxPrefab, pos);
-                Cut(column);
+                Cut(column, pos, config);
 
                 hit.Clear();
                 foreach (var col in Physics.OverlapSphere(pos, config.explosionRadius, ~0, QueryTriggerInteraction.Ignore))
                 {
                     var rb = col.attachedRigidbody;
-                    if (rb != null && !rb.isKinematic && rb.TryGetComponent<Fracturable>(out var fracturable) && !fracturable.IsShattered &&
-                        Vector3.Distance(col.ClosestPoint(pos), pos) <= config.shatterBlastRadius)
+                    if (rb != null && !rb.isKinematic && rb.TryGetComponent<Fracturable>(out var fracturable) &&
+                        fracturable.ShatterOnImpact && !fracturable.IsShattered && Vector3.Distance(col.ClosestPoint(pos), pos) <= config.shatterBlastRadius)
                     {
                         fracturable.Shatter(pos, config.explosionKick);
                         continue;
@@ -100,11 +100,18 @@ namespace KatKat
         }
 
         /// <summary>
-        /// Kolonu keser: tüm eklemleri ve kolonun kendisi gider, yerine iki moloz parçası kalır.
-        /// Kolon objesiyle birlikte üstündeki ankraj da yok olur.
+        /// Kolonu keser: tüm eklemler gider. Cell Fracture modeliyse kolon parçalarına ayrılır;
+        /// değilse kolon yok olur ve yerine iki moloz parçası kalır. Her iki durumda üstündeki ankraj da yok olur.
         /// </summary>
-        private void Cut(StructuralPiece column)
+        private void Cut(StructuralPiece column, Vector3 blastOrigin, GameConfig config)
         {
+            if (column.TryGetComponent<Fracturable>(out var fracturable))
+            {
+                foreach (var anchor in column.GetComponentsInChildren<AnchorPoint>(true)) Destroy(anchor.gameObject);
+                fracturable.Shatter(blastOrigin, config.explosionKick);
+                return;
+            }
+
             column.DetachAll();
 
             var t = column.transform;
@@ -130,6 +137,7 @@ namespace KatKat
                 var rb = PrefabPlacement.EnsureBody(go, mass, continuous: false);
                 rb.isKinematic = false;
                 rb.angularVelocity = Random.insideUnitSphere * 2f;
+                Fragment.Mark(go, column); // iki moloz parçası tek kolon sayılır
                 if (Floor != null) Floor.Bodies.Add(rb);
             }
 

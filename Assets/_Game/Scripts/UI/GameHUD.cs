@@ -166,16 +166,17 @@ namespace KatKat
 
             GUI.Label(new Rect(x, y, w, 36f), $"KAT {_gm.FloorNumber + 1} SONUCU", _title);
             y += 48f;
-            Row(ref y, x, w, "Kurtarılan eşya", r.SavedItems.ToString());
+            Row(ref y, x, w, "Kurtarılan eşya", $"{r.SavedItems} / {r.TotalItems}");
             Row(ref y, x, w, $"Bölge dışı parça  (×{FloorScorer.PiecePenalty})", r.OutPieces.ToString());
             Row(ref y, x, w, $"Bölge dışı küçük eşya  (×{FloorScorer.SmallItemPenalty})", r.OutSmallItems.ToString());
             Row(ref y, x, w, $"Komşu binaya çarpan  (×{FloorScorer.NeighborPenalty})", r.NeighborHits.ToString());
             Row(ref y, x, w, "Bölge dışı büyük eşya", r.OutBigItems > 0 ? $"{r.OutBigItems}  →  −{r.LivesLost} can" : "0");
             y += 8f;
             GUI.Label(new Rect(x, y, w, 30f),
-                $"Ceza {r.Penalty}  →  sonraki kat bütçesi −{r.Penalty * _gm.Config.penaltyBudgetCost:0.0}", _label);
+                $"Ceza {r.Penalty}  →  bütçeden −{r.Penalty * _gm.Config.penaltyBudgetCost:0.0}", _label);
             y += 30f;
-            GUI.Label(new Rect(x, y, w, 30f), $"Devreden ip: {_gm.Budget.Remaining:0.0}", _label);
+            GUI.Label(new Rect(x, y, w, 30f),
+                $"Devreden ip: {_gm.Budget.Remaining:0.0}   Sonraki kat bütçesi: {_gm.NextFloorBudget():0.0}", _label);
             y += 44f;
 
             if (GUI.Button(new Rect(x, y, w * 0.55f, 46f), "Devam   [Enter]", _big)) _gm.ContinueAfterResults();

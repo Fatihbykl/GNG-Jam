@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -253,12 +253,20 @@ namespace KatKat
             _settleRoutine = null;
         }
 
+        /// <summary>Sonuç ekranındaki sonuca göre bir alt katın ip bütçesi (taban + devreden ip − ceza).</summary>
+        public float NextFloorBudget()
+        {
+            return RopeBudget.NextFloorBudget(FloorDifficulty.For(Run.FloorsDescended + 1, Config).BaseBudget,
+                Budget.Remaining, LastResult.Penalty, Config.penaltyBudgetCost, Config.minBudget);
+        }
+
         /// <summary>Sonucu uygular ve bir kat aşağı iner.</summary>
         public void ContinueAfterResults()
         {
             if (State != GameState.Results) return;
 
             var r = LastResult;
+            float next = NextFloorBudget();
             Run.Lives -= r.LivesLost;
             Run.TotalPenalty += r.Penalty;
             Run.FloorsDescended++;
@@ -270,8 +278,6 @@ namespace KatKat
                 return;
             }
 
-            float next = RopeBudget.NextFloorBudget(FloorDifficulty.For(Run.FloorsDescended, Config).BaseBudget,
-                Run.CarriedRope, r.Penalty, Config.penaltyBudgetCost, Config.minBudget);
 
             DestroyFloor(ActiveFloor);
             _floorIndex++;

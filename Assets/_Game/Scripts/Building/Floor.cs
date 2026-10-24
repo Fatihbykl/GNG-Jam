@@ -24,6 +24,8 @@ namespace KatKat
         public readonly List<StructuralPiece> CeilingTiles = new List<StructuralPiece>();
         public readonly List<StructuralPiece> Walls = new List<StructuralPiece>();
         public readonly List<Item> Items = new List<Item>();
+        /// <summary>Eşyaların gevşek parçaları (ör. kitaplar); puanlamada sayılmaz.</summary>
+        public readonly HashSet<Rigidbody> ItemParts = new HashSet<Rigidbody>();
         public readonly List<AnchorPoint> Anchors = new List<AnchorPoint>();
         public readonly List<ExplosiveCharge> Charges = new List<ExplosiveCharge>();
 

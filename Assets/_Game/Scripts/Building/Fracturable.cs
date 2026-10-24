@@ -4,7 +4,7 @@ using UnityEngine;
 namespace KatKat
 {
     /// <summary>
-    /// Blender Cell Fracture ile önceden parçalanmış duvar/tavan modeli. Prefab, kökün altında her biri ayrı
+    /// Blender Cell Fracture ile önceden parçalanmış duvar/tavan/kolon modeli. Prefab, kökün altında her biri ayrı
     /// mesh olan parçalardan oluşur. Sağlamken tek Rigidbody ve kök collider'ı ile tek parça gibi davranır;
     /// sert bir çarpmada ya da yakındaki şarj patlayınca her parça kendi Rigidbody'sine kavuşur.
     /// Parçalar kökün altında kalır (esnetilmiş ölçek bozulmasın diye); kök kinematik olup yerinde bekler.
@@ -14,6 +14,11 @@ namespace KatKat
     {
         private const float AngularKick = 3f;
 
+        /// <summary>
+        /// Açıksa sert çarpmada ve yakındaki şarj patlamasında kırılır. Kolonlarda kapalı: onları yalnızca
+        /// kendi şarjı kırar, yoksa ankrajı ve ipi havada kalırdı.
+        /// </summary>
+        public bool ShatterOnImpact { get; private set; }
         public bool IsShattered { get; private set; }
 
         private StructuralPiece _piece;
@@ -22,7 +27,8 @@ namespace KatKat
         private readonly List<MeshFilter> _shards = new List<MeshFilter>();
 
         /// <summary>Modelde en az iki parça mesh varsa parçanın kırılabilir olmasını sağlar.</summary>
-        public static Fracturable TryAdd(StructuralPiece piece, Floor floor, GameConfig cfg)
+        /// <remarks>Ankraj ve şarj işareti gibi görsel alt objeler eklenmeden önce çağrılmalı; yoksa parça sanılırlar.</remarks>
+        public static Fracturable TryAdd(StructuralPiece piece, Floor floor, GameConfig cfg, bool shatterOnImpact = true)
         {
             var shards = new List<MeshFilter>();
             foreach (var mf in piece.GetComponentsInChildren<MeshFilter>(true))
@@ -35,6 +41,7 @@ namespace KatKat
             f._piece = piece;
             f._floor = floor;
             f._cfg = cfg;
+            f.ShatterOnImpact = shatterOnImpact;
             f._shards.Clear();
             f._shards.AddRange(shards);
             return f;
@@ -42,7 +49,7 @@ namespace KatKat
 
         private void OnCollisionEnter(Collision collision)
         {
-            if (IsShattered || _piece == null || _piece.Body.isKinematic) return;
+            if (!ShatterOnImpact || IsShattered || _piece == null || _piece.Body.isKinematic) return;
             if (collision.relativeVelocity.magnitude >= _cfg.shatterImpactSpeed) Shatter(null, 0f);
         }
 
@@ -97,7 +104,7 @@ namespace KatKat
                 rb.linearVelocity = v;
                 rb.angularVelocity = angular + Random.insideUnitSphere * AngularKick;
 
-                go.AddComponent<Fragment>().Source = _piece;
+                Fragment.Mark(go, _piece);
                 _floor.Bodies.Add(rb);
             }
         }

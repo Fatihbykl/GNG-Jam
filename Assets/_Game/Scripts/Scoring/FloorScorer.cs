@@ -18,6 +18,7 @@ namespace KatKat
         public int OutBigItems;
         public int NeighborHits;
         public int SavedItems;
+        public int TotalItems;
         public int Penalty;
         public int LivesLost;
     }
@@ -45,6 +46,7 @@ namespace KatKat
                 if (o.HitNeighbor) r.NeighborHits++;
                 if (o.IsItem)
                 {
+                    r.TotalItems++;
                     if (o.Inside) r.SavedItems++;
                     else if (o.IsBig) r.OutBigItems++;
                     else r.OutSmallItems++;
@@ -69,17 +71,17 @@ namespace KatKat
                 if (item != null) itemBodies[item.Body] = item;
             }
 
-            // Kırılan parçanın kopan parçaları tek parça sayılır: kütlesinin yarısı bölge içindeyse içeride.
-            var fragments = new Dictionary<StructuralPiece, (float inside, float total, bool hit)>();
+            // Kırılan parçanın kopan parçaları (ve kolon molozu) tek parça sayılır: kütlesinin yarısı bölge içindeyse içeride.
+            var fragments = new Dictionary<int, (float inside, float total, bool hit)>();
 
             foreach (var rb in floor.Bodies)
             {
-                if (rb == null) continue;
-                if (rb.TryGetComponent<Fragment>(out var fragment) && fragment.Source != null)
+                if (rb == null || floor.ItemParts.Contains(rb)) continue;
+                if (rb.TryGetComponent<Fragment>(out var fragment))
                 {
-                    fragments.TryGetValue(fragment.Source, out var acc);
+                    fragments.TryGetValue(fragment.Group, out var acc);
                     bool fragInside = rb.gameObject.activeSelf && zone.Contains(rb.worldCenterOfMass);
-                    fragments[fragment.Source] = (acc.inside + (fragInside ? rb.mass : 0f), acc.total + rb.mass,
+                    fragments[fragment.Group] = (acc.inside + (fragInside ? rb.mass : 0f), acc.total + rb.mass,
                         acc.hit || neighborHits.Contains(rb));
                     continue;
                 }

@@ -83,6 +83,8 @@ namespace KatKat
                 if (isBearing && prefab != null && content.BearingColumnPrefab == null) TintBearing(go);
                 var piece = AddPiece(floor, go, PieceKind.Column, cfg.columnMass, pos, slot);
                 piece.IsBearing = isBearing;
+                // Taşıyıcı kolon patlamaz, ayakta kalmalı; yalnızca şarjlı kolonlar kırılır.
+                if (!isBearing) Fracturable.TryAdd(piece, floor, cfg, shatterOnImpact: false);
                 grid[i, j] = piece;
                 floor.Columns.Add(piece);
 
@@ -204,6 +206,7 @@ namespace KatKat
                 floor.Items.Add(item);
                 floor.Bodies.Add(item.Body);
                 floor.Bodies.AddRange(extra);
+                floor.ItemParts.UnionWith(extra);
             }
 
             var content = floor.Content;
