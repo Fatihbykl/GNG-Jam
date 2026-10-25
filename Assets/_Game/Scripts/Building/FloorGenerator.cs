@@ -83,8 +83,10 @@ namespace KatKat
                 if (isBearing && prefab != null && content.BearingColumnPrefab == null) TintBearing(go);
                 var piece = AddPiece(floor, go, PieceKind.Column, cfg.columnMass, pos, slot);
                 piece.IsBearing = isBearing;
-                // Taşıyıcı kolon patlamaz, ayakta kalmalı; yalnızca şarjlı kolonlar kırılır.
-                if (!isBearing) Fracturable.TryAdd(piece, floor, cfg, shatterOnImpact: false);
+                // Şarjlı kolonu yalnızca kendi şarjı kırar. Taşıyıcı kolon patlamaz ama tepesinden tuğla döker,
+                // devrilirse dağılır (bkz. BearingCrumble).
+                var fracturable = Fracturable.TryAdd(piece, floor, cfg, shatterOnImpact: false);
+                if (isBearing && fracturable != null) BearingCrumble.Add(piece, fracturable, cfg);
                 grid[i, j] = piece;
                 floor.Columns.Add(piece);
 

@@ -75,6 +75,8 @@ namespace KatKat
             int group = TryGetComponent<Fragment>(out var fragment) ? fragment.Group : GetInstanceID();
             float totalVolume = 0f;
             foreach (var c in Cells) totalVolume += Volume(c);
+            // Puanlanmayan tuğlanın (ör. taşıyıcı kolondan dökülen) parçaları da puanlanmaz.
+            bool scored = body != null && _floor.Bodies.Remove(body);
 
             foreach (var c in Cells)
             {
@@ -92,10 +94,9 @@ namespace KatKat
                 rb.angularVelocity = angular + Random.insideUnitSphere * CellSpin;
 
                 Fragment.MarkGroup(go, group);
-                _floor.Bodies.Add(rb);
+                if (scored) _floor.Bodies.Add(rb);
             }
 
-            if (body != null) _floor.Bodies.Remove(body);
             gameObject.SetActive(false);
             Destroy(gameObject);
         }

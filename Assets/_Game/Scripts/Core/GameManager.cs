@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -43,7 +43,7 @@ namespace KatKat
         public List<ItemReport> LastItemReports { get; private set; } = new List<ItemReport>();
         /// <summary>Patlama sürerken anlık ceza (HUD çubuğu için, kısa aralıklarla yenilenir).</summary>
         public FloorResult LiveResult { get; private set; }
-        public int PenaltyLimit => FloorDifficulty.For(FloorNumber, Config).PenaltyLimit;
+        public int PenaltyLimit => FloorScorer.PenaltyLimitFor(ActiveFloor, FloorNumber, Config);
         public int SelectedRopeType { get; private set; }
         public string Message { get; private set; }
         public int FloorNumber => Run.FloorsDescended;
@@ -87,6 +87,7 @@ namespace KatKat
             Zone.transform.SetParent(transform, false);
             Sequence = gameObject.AddComponent<DetonationSequence>();
             Sequence.ChargeFiring += OnChargeFiring;
+            BearingCrumble.Toppled += OnBearingToppled;
             Collapse = gameObject.AddComponent<CollapsePreview>();
             Collapse.Init(this);
             Impact = gameObject.AddComponent<ImpactPreview>();
@@ -139,7 +140,11 @@ namespace KatKat
 
         private void Start() => NewRun();
 
-        private void OnDestroy() => TimeController.ResetTime();
+        private void OnDestroy()
+        {
+            BearingCrumble.Toppled -= OnBearingToppled;
+            TimeController.ResetTime();
+        }
 
         #endregion
 
@@ -275,6 +280,17 @@ namespace KatKat
             }
 
             if (released > 0) ShowMessage($"Sıra {charge.Label} patladı: {released} ip boşa çıktı");
+        }
+
+        /// <summary>Tabanı kopup devrilen taşıyıcı kolon dağıldı: ona bağlı ipler boşa çıkar.</summary>
+        private void OnBearingToppled(StructuralPiece column)
+        {
+            int released = 0;
+            foreach (var link in Ropes)
+            {
+                if (link != null && link.ReleaseFromColumn(column, BearingCrumble.ReleaseLabel)) released++;
+            }
+            if (released > 0) ShowMessage($"Taşıyıcı kolon devrildi: {released} ip boşa çıktı");
         }
 
         private IEnumerator SettleRoutine()

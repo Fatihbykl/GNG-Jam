@@ -102,6 +102,29 @@ namespace KatKat
                     rope.AddExplosionForce(config.ropeBlastPower, pos, config.explosionRadius);
                 }
             }
+
+            ShakeBearingColumns();
+        }
+
+        /// <summary>Taşıyıcı kolonlar, sıranın en yakın kolonuna olan uzaklığa göre tepelerinden tuğla döker.</summary>
+        private void ShakeBearingColumns()
+        {
+            if (Floor == null) return;
+            foreach (var bearing in Floor.Columns)
+            {
+                if (bearing == null || !bearing.IsBearing || !bearing.TryGetComponent<BearingCrumble>(out var crumble)) continue;
+                Vector3 nearest = default;
+                float best = float.PositiveInfinity;
+                foreach (var column in Columns)
+                {
+                    if (column == null) continue;
+                    float d = (column.WorldCenter - bearing.WorldCenter).sqrMagnitude;
+                    if (d >= best) continue;
+                    best = d;
+                    nearest = column.WorldCenter;
+                }
+                if (!float.IsPositiveInfinity(best)) crumble.OnBlast(nearest);
+            }
         }
 
         /// <summary>

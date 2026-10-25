@@ -36,7 +36,7 @@ namespace KatKat
     }
 
     /// <summary>
-    /// GDD puanlama kuralları: bölge dışındaki her parça ceza, komşu binaya çarpan parça büyük ceza,
+    /// GDD puanlama kuralları (yalnızca eşyalar): bölge dışındaki küçük eşya ceza, komşu binaya çarpan eşya büyük ceza,
     /// bölge dışına çıkan büyük eşya bir can; kat cezası sınırı aşarsa bir can daha.
     /// </summary>
     public static class FloorScorer
@@ -48,6 +48,30 @@ namespace KatKat
         public static int ComputePenalty(int outPieces, int outSmallItems, int neighborHits)
         {
             return outPieces * PiecePenalty + outSmallItems * SmallItemPenalty + neighborHits * NeighborPenalty;
+        }
+
+        /// <summary>
+        /// Kat cezası sınırı kattaki küçük eşya sayısından gelir (büyük eşya zaten can götürür): küçük eşyaların
+        /// belli bir oranı düşebilir, oran katlar indikçe azalır. En az bir küçük eşyanın düşmesine izin verir.
+        /// </summary>
+        public static int PenaltyLimitFor(int smallItems, int floorNumber, GameConfig cfg)
+        {
+            float ratio = Mathf.Max(cfg.minPenaltyLimitItemRatio,
+                cfg.penaltyLimitItemRatio - cfg.penaltyLimitRatioDecreasePerFloor * floorNumber);
+            return Mathf.Max(SmallItemPenalty, Mathf.RoundToInt(smallItems * ratio) * SmallItemPenalty);
+        }
+
+        public static int PenaltyLimitFor(Floor floor, int floorNumber, GameConfig cfg)
+        {
+            int small = 0;
+            if (floor != null)
+            {
+                foreach (var item in floor.Items)
+                {
+                    if (item != null && item.Size == ItemSize.Small) small++;
+                }
+            }
+            return PenaltyLimitFor(small, floorNumber, cfg);
         }
 
         public static FloorResult Tally(IEnumerable<BodyOutcome> outcomes, int penaltyLimit = int.MaxValue)
@@ -76,44 +100,21 @@ namespace KatKat
             return r;
         }
 
+        /// <summary>Yalnızca eşyalar puanlanır; bina parçaları (duvar, kolon, tavan, moloz) her durumda dağıldığı için sayılmaz.</summary>
         public static FloorResult Evaluate(Floor floor, SafeZone zone, ICollection<Rigidbody> neighborHits,
             int penaltyLimit = int.MaxValue)
         {
-            var outcomes = new List<BodyOutcome>(floor.Bodies.Count);
-            var itemBodies = new Dictionary<Rigidbody, Item>();
+            var outcomes = new List<BodyOutcome>(floor.Items.Count);
             foreach (var item in floor.Items)
             {
-                if (item != null) itemBodies[item.Body] = item;
-            }
-
-            // Kırılan parçanın kopan parçaları (ve kolon molozu) tek parça sayılır: kütlesinin yarısı bölge içindeyse içeride.
-            var fragments = new Dictionary<int, (float inside, float total, bool hit)>();
-
-            foreach (var rb in floor.Bodies)
-            {
-                if (rb == null || floor.ItemParts.Contains(rb)) continue;
-                if (rb.TryGetComponent<Fragment>(out var fragment))
-                {
-                    fragments.TryGetValue(fragment.Group, out var acc);
-                    bool fragInside = rb.gameObject.activeSelf && zone.Contains(rb.worldCenterOfMass);
-                    fragments[fragment.Group] = (acc.inside + (fragInside ? rb.mass : 0f), acc.total + rb.mass,
-                        acc.hit || neighborHits.Contains(rb));
-                    continue;
-                }
-
-                bool isItem = itemBodies.TryGetValue(rb, out var item);
+                if (item == null) continue;
                 outcomes.Add(new BodyOutcome
                 {
-                    IsItem = isItem,
-                    IsBig = isItem && item.Size == ItemSize.Big,
-                    Inside = rb.gameObject.activeSelf && zone.Contains(rb.worldCenterOfMass),
-                    HitNeighbor = neighborHits.Contains(rb)
+                    IsItem = true,
+                    IsBig = item.Size == ItemSize.Big,
+                    Inside = IsInside(item, zone),
+                    HitNeighbor = neighborHits.Contains(item.Body)
                 });
-            }
-
-            foreach (var (inside, total, hit) in fragments.Values)
-            {
-                outcomes.Add(new BodyOutcome { Inside = inside >= total * 0.5f, HitNeighbor = hit });
             }
 
             return Tally(outcomes, penaltyLimit);
@@ -153,13 +154,13 @@ namespace KatKat
                     if (best != null) text = $"{best.Type.DisplayName} tuttu (tepe %{best.PeakRatio * 100f:0})";
                     else if (packed) text = "pakette kaldı";
                     else if (item.SnappedRope != null) text = $"{item.SnappedRope} koptu ama bölgede kaldı";
-                    else if (item.ReleasedBy != null) text = $"ip {item.ReleasedBy} patlayınca boşa çıktı, şanslıydı";
+                    else if (item.ReleasedBy != null) text = $"ip {ReleaseCause(item)} boşa çıktı, şanslıydı";
                     else text = "bağsız, yerinde kaldı";
                 }
                 else
                 {
                     if (item.SnappedRope != null) text = $"{item.SnappedRope} koptu, düştü";
-                    else if (item.ReleasedBy != null) text = $"ip {item.ReleasedBy} patlayınca boşa çıktı, düştü";
+                    else if (item.ReleasedBy != null) text = $"ip {ReleaseCause(item)} boşa çıktı, düştü";
                     else if (best != null) text = "ipte asılı ama bölge dışında";
                     else if (packed) text = "paketle birlikte düştü";
                     else text = "bağsızdı, düştü";
@@ -168,6 +169,11 @@ namespace KatKat
                 reports.Add(new ItemReport { Name = item.DisplayName, IsBig = item.Size == ItemSize.Big, Inside = inside, Text = text });
             }
             return reports;
+        }
+
+        private static string ReleaseCause(Item item)
+        {
+            return item.ReleasedBy == BearingCrumble.ReleaseLabel ? "taşıyıcı kolon devrilince" : $"{item.ReleasedBy} patlayınca";
         }
     }
 }
