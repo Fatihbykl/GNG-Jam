@@ -181,8 +181,11 @@ namespace KatKat
             TimeController.ResetTime();
 
             ActiveFloor.SetDimmed(false);
+            ActiveFloor.SetOnlyCeiling(false);
             ActiveFloor.SetCeilingCutaway(true);
             BelowFloor.SetDimmed(true);
+            // Alt kattan yalnızca aktif katın zemini olan tavanı görünür
+            BelowFloor.SetOnlyCeiling(true);
             Zone.Configure(ActiveFloor.Footprint, ActiveFloor.BaseY, Config.safeZoneMargin);
 
             Budget = new RopeBudget(budget);

@@ -72,7 +72,8 @@ namespace KatKat
             Vector3 c = _cam.transform.position;
             _plane.position = new Vector3(c.x, _y, c.z);
 
-            _material.SetColor(ColorId, v.heightFogColor);
+            // Sis, kameranın düz arka plan rengine karışsın; ufukta dikiş kalmasın
+            _material.SetColor(ColorId, _cam.backgroundColor);
             _material.SetFloat(TopYId, _y);
             _material.SetFloat(DensityId, v.heightFogDensity);
             _material.SetFloat(NoiseScaleId, v.heightFogNoiseScale);

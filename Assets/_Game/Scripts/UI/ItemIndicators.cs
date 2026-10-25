@@ -104,8 +104,8 @@ namespace KatKat
                     GameHUD.Float(p + Vector3.up, big ? "−1 CAN" : $"+{FloorScorer.SmallItemPenalty} ceza",
                         big ? OutColor : PenaltyColor);
 
-                    Debug.Log("Game over!");
-                    _gm.State = GameState.GameOver;
+                    //Debug.Log("Game over!");
+                    //_gm.State = GameState.GameOver;
                 }
                 else if (item != null)
                 {

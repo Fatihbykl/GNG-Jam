@@ -9,6 +9,8 @@ namespace KatKat
     /// </summary>
     public class OrbitCamera : MonoBehaviour
     {
+        [Tooltip("Oyun başlarken kameranın odağa uzaklığı.")]
+        public float StartDistance = 12f;
         public float MinDistance = 6f;
         public float MaxDistance = 40f;
         public float MinPitch = 10f;
@@ -33,6 +35,11 @@ namespace KatKat
         private bool _cinematic;
         private float _dragAccum;
         private float _shake;
+
+        private void Awake()
+        {
+            _distance = _distanceTarget = Mathf.Clamp(StartDistance, MinDistance, MaxDistance);
+        }
 
         public void SetFocus(Vector3 point, bool snap = false)
         {

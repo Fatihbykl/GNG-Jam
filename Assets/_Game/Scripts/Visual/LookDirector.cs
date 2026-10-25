@@ -40,7 +40,7 @@ namespace KatKat
             camData.requiresDepthTexture = true;
 
             BuildVolume();
-            //gameObject.AddComponent<HeightFog>().Init(gm, cam);
+            gameObject.AddComponent<HeightFog>().Init(gm, cam);
 
             _sun = FindSun();
             _fill = new GameObject("FillLight").AddComponent<Light>();

@@ -151,6 +151,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f9950ced395fe94dad7dc46820d9909, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  StartDistance: 12
   MinDistance: 6
   MaxDistance: 40
   MinPitch: 10
