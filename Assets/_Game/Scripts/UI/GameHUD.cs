@@ -170,7 +170,7 @@ namespace KatKat
         private void DrawSequencePanel(float width)
         {
             var seq = _gm.Sequence;
-            float h = 190f + seq.Order.Count * 40f + 100f;
+            float h = 190f + seq.Order.Count * 40f + 100f + 96f;
             var rect = Panel(new Rect(width - 400f - Pad, Pad, 400f, h));
             float x = rect.x + 14f, y = rect.y + 10f, w = rect.width - 28f;
 
@@ -181,6 +181,7 @@ namespace KatKat
             GUI.Label(new Rect(x, y, w, 64f),
                 "Koyu mavi kolon: taşıyıcı, patlamaz.\nŞarjlı kolona bağlı ip, kolon patlayınca boşa çıkar.", _small);
             y += 70f;
+            DrawPrediction(x, ref y, w);
 
             for (int i = 0; i < seq.Order.Count; i++)
             {
@@ -202,9 +203,38 @@ namespace KatKat
             if (Button(new Rect(x, y, w, 32f), "Katı sıfırla (ipler kalır)   [R]", _button)) _gm.QuickReset();
         }
 
+        /// <summary>Planlamadaki tahmin özeti: kaç eşya düşer, kaç ip kopar, tahmini ceza ve sınır.</summary>
+        private void DrawPrediction(float x, ref float y, float w)
+        {
+            var impact = _gm.Impact;
+            if (impact == null || !impact.HasData)
+            {
+                y += 96f;
+                return;
+            }
+
+            int limit = _gm.PenaltyLimit;
+            bool lifeRisk = impact.BigFalls > 0 || impact.EstimatedPenalty > limit;
+            var old = GUI.color;
+            GUI.color = lifeRisk ? Bad : impact.SmallFalls > 0 || impact.Snaps > 0 ? Warn : Good;
+            string falls = impact.BigFalls + impact.SmallFalls == 0
+                ? "Tahmin: hiçbir eşya düşmez"
+                : $"Tahmin: {impact.BigFalls} büyük, {impact.SmallFalls} küçük eşya düşer" +
+                  (impact.GasBlasts > 0 ? $"  ({impact.GasBlasts} gaz patlar)" : "");
+            GUI.Label(new Rect(x, y, w, 26f), falls, _label);
+            GUI.color = old;
+            y += 28f;
+            GUI.Label(new Rect(x, y, w, 24f),
+                $"{impact.Snaps} ip kopar  •  {impact.OutwardWalls} duvar dışa  •  ceza ~{impact.EstimatedPenalty} / sınır {limit}",
+                _small);
+            y += 26f;
+            GUI.Label(new Rect(x, y, w, 40f), "Oklar yaklaşık: yeşil kalır, sarı kayar, kırmızı düşer.", _small);
+            y += 42f;
+        }
+
         private void DrawRunningPanel(float width)
         {
-            var rect = Panel(new Rect(width - 400f - Pad, Pad, 400f, 150f));
+            var rect = Panel(new Rect(width - 400f - Pad, Pad, 400f, 200f));
             float x = rect.x + 14f, y = rect.y + 10f, w = rect.width - 28f;
             var seq = _gm.Sequence;
             string status = _gm.State == GameState.Detonating
@@ -213,14 +243,26 @@ namespace KatKat
             GUI.Label(new Rect(x, y, w, 32f), status, _title);
             y += 40f;
             GUI.Label(new Rect(x, y, w, 26f), $"[Boşluk] Ağır çekim  ({_gm.SlowMo.ChargesLeft} hak)", _label);
-            y += 36f;
+            y += 32f;
+
+            // Anlık ceza; sınır çizgisini geçerse bir can gider
+            var live = _gm.LiveResult;
+            int limit = _gm.PenaltyLimit;
+            GUI.Label(new Rect(x, y, w, 24f), $"Ceza {live.Penalty} / sınır {limit}", _label);
+            y += 26f;
+            float scaleMax = Mathf.Max(1f, limit * 1.5f);
+            var bar = new Rect(x, y, w, 12f);
+            DrawBar(bar, live.Penalty / scaleMax, live.Penalty > limit ? Bad : live.Penalty > limit * 0.7f ? Warn : Good);
+            DrawSwatch(new Rect(bar.x + bar.width * (limit / scaleMax) - 1.5f, bar.y - 4f, 3f, bar.height + 8f), Color.white);
+            y += 24f;
             if (Button(new Rect(x, y, w, 32f), "Planlamaya dön   [R]", _button)) _gm.QuickReset();
         }
 
         private void DrawResults(float width)
         {
             var r = _gm.LastResult;
-            var rect = Panel(new Rect(width * 0.5f - 260f, 200f, 520f, 420f));
+            var rect = Panel(new Rect(width * 0.5f - 260f, 200f, 520f, 460f));
+            DrawItemReports(new Rect(rect.xMax + 12f, rect.y, 420f, 0f));
             float x = rect.x + 24f, y = rect.y + 16f, w = rect.width - 48f;
             float t = Time.unscaledTime - _resultsStart;
 
@@ -237,7 +279,9 @@ namespace KatKat
             ResultRow(ref y, x, w, t, row++, $"Komşu binaya çarpan  (×{FloorScorer.NeighborPenalty})", r.NeighborHits, "",
                 r.NeighborHits == 0 ? Good : Bad, false);
             ResultRow(ref y, x, w, t, row++, "Bölge dışı büyük eşya", r.OutBigItems,
-                r.LivesLost > 0 ? $"   →  −{r.LivesLost} can" : "", r.OutBigItems == 0 ? Good : Bad, r.LivesLost > 0);
+                r.OutBigItems > 0 ? $"   →  −{r.OutBigItems} can" : "", r.OutBigItems == 0 ? Good : Bad, r.OutBigItems > 0);
+            ResultRow(ref y, x, w, t, row++, $"Ceza / sınır {r.PenaltyLimit}", r.Penalty,
+                r.OverLimit ? "   →  aşıldı, −1 can" : "", r.OverLimit ? Bad : Good, r.OverLimit);
 
             // Özet, tüm satırlar geldikten sonra belirir
             if (t >= row * RowRevealInterval)
@@ -258,6 +302,32 @@ namespace KatKat
 
             if (Button(new Rect(x, y, w * 0.55f, 48f), "Devam   [Enter]", _big)) _gm.ContinueAfterResults();
             if (Button(new Rect(x + w * 0.58f, y, w * 0.42f, 48f), "Tekrar dene  [R]", _button)) _gm.QuickReset();
+        }
+
+        /// <summary>Eşya başına ne olduğu: hangi ip tuttu, hangisi koptu ya da boşa çıktı.</summary>
+        private void DrawItemReports(Rect at)
+        {
+            var reports = _gm.LastItemReports;
+            if (reports == null || reports.Count == 0) return;
+            float t = Time.unscaledTime - _resultsStart;
+            var rect = Panel(new Rect(at.x, at.y, at.width, 56f + reports.Count * 30f));
+            float x = rect.x + 16f, y = rect.y + 12f, w = rect.width - 32f;
+            GUI.Label(new Rect(x, y, w, 30f), "EŞYALAR", _title);
+            y += 40f;
+
+            var old = GUI.color;
+            for (int i = 0; i < reports.Count; i++)
+            {
+                float alpha = Mathf.Clamp01((t - i * 0.12f) / 0.2f);
+                var r = reports[i];
+                Color c = r.Inside ? Good : r.IsBig ? Bad : Warn;
+                GUI.color = new Color(c.r, c.g, c.b, alpha);
+                GUI.Label(new Rect(x, y, 130f, 28f), r.IsBig ? $"■ {r.Name}" : $"• {r.Name}", _small);
+                GUI.color = new Color(1f, 1f, 1f, alpha);
+                GUI.Label(new Rect(x + 132f, y, w - 132f, 28f), r.Text, _small);
+                y += 30f;
+            }
+            GUI.color = old;
         }
 
         private void DrawGameOver(float width)
@@ -312,7 +382,7 @@ namespace KatKat
             {
                 case GameState.Planning:
                     text = "Sol tık: eşya → ankraj / eşya   •   Sağ tık: iptal / ipi sil   •   Sağ sürükle: döndür   •   " +
-                           "Tekerlek: yakınlaş   •   Q/E: açı   •   F: odakla   •   1-3: ip tipi   •   F1: debug";
+                           $"Tekerlek: yakınlaş   •   Q/E: açı   •   F: odakla   •   1-{_gm.RopeTypes.Length}: ip tipi   •   F1: debug";
                     break;
                 case GameState.Detonating:
                 case GameState.Settling:
@@ -340,6 +410,21 @@ namespace KatKat
                     if (!ToGui(order[i].LabelPosition, out var p)) continue;
                     GUI.Box(new Rect(p.x - 22f, p.y - 16f, 44f, 32f), GUIContent.none, _box);
                     GUI.Label(new Rect(p.x - 22f, p.y - 16f, 44f, 32f), $"{i + 1}", _tag);
+                }
+            }
+
+            if (_gm.State == GameState.Planning && _gm.Impact != null)
+            {
+                var old = GUI.color;
+                foreach (var label in _gm.Impact.Labels)
+                {
+                    if (!ToGui(label.World, out var lp)) continue;
+                    var size = _small.CalcSize(new GUIContent(label.Text));
+                    var r = new Rect(lp.x - size.x * 0.5f - 6f, lp.y - 12f, size.x + 12f, 24f);
+                    GUI.Box(r, GUIContent.none, _box);
+                    GUI.color = label.Color;
+                    GUI.Label(new Rect(r.x + 6f, r.y + 1f, size.x, 22f), label.Text, _small);
+                    GUI.color = old;
                 }
             }
 

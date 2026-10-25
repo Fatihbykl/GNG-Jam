@@ -89,7 +89,11 @@ namespace KatKat
 
         /// <param name="blastOrigin">Patlama noktası; verilirse parçalar buradan dışarı savrulur.</param>
         /// <param name="kick">Patlama merkezindeki hız değişimi (m/s), uzaklıkla azalır.</param>
-        public void Shatter(Vector3? blastOrigin, float kick)
+        /// <param name="topple">
+        /// Devrilme hızı: parçalar bu yöne, yükseklikleriyle artan hızla savrulur (tepe en hızlı). Duvarın patlama
+        /// sırasına göre içe/dışa düşmesi için.
+        /// </param>
+        public void Shatter(Vector3? blastOrigin, float kick, Vector3 topple = default)
         {
             if (IsShattered || _piece == null) return;
             IsShattered = true;
@@ -105,6 +109,8 @@ namespace KatKat
             body.detectCollisions = false;
             _floor.Bodies.Remove(body);
 
+            float baseY = _piece.WorldCenter.y - _piece.SlotSize.y * 0.5f;
+            float height = Mathf.Max(0.1f, _piece.SlotSize.y);
             float totalVolume = 0f;
             foreach (var mf in _shards) totalVolume += Volume(mf);
             SpawnDust();
@@ -135,6 +141,11 @@ namespace KatKat
                     Vector3 away = center - blastOrigin.Value;
                     float falloff = 1f - Mathf.Clamp01(away.magnitude / _cfg.explosionRadius);
                     v += (away.normalized + Vector3.up * _cfg.explosionUpward) * (kick * falloff);
+                }
+                if (topple != Vector3.zero)
+                {
+                    float k = Mathf.Clamp01((center.y - baseY) / height);
+                    v += topple * Mathf.Lerp(0.3f, 1f, k);
                 }
                 rb.linearVelocity = v;
                 rb.angularVelocity = angular + Random.insideUnitSphere * AngularKick;

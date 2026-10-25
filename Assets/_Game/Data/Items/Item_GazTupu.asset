@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4ac4e6706c87854086e529e148e2ee2, type: 3}
+  m_Name: Item_GazTupu
+  m_EditorClassIdentifier:
+  DisplayName: "Gaz t\xFCp\xFC"
+  Prefab: {fileID: 0}
+  Size: 0
+  Mass: 15
+  CanBeTied: 1
+  Volatile: 1
+  FootprintRadius: 0
+  SpawnWeight: 0.6
+  MinFloor: 1
+  LoosePartBreakForce: 120
+  LoosePartBreakTorque: 60
+  LoosePartMass: 1.5
+  FallbackSize: {x: 0.35, y: 0.9, z: 0.35}
+  FallbackColor: {r: 0.9, g: 0.2, b: 0.15, a: 1}
+  FallbackLooseParts: 0

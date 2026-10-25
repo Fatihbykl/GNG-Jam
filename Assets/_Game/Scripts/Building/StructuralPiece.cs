@@ -26,6 +26,10 @@ namespace KatKat
         public bool IsBearing;
         /// <summary>Kolonlar için: bu kolonu kesen şarj (taşıyıcıysa null).</summary>
         public ExplosiveCharge Charge;
+        /// <summary>Duvarlar için: iki ucundaki kolon. Bunlardan biri patlayınca duvar devrilir.</summary>
+        public readonly List<StructuralPiece> SupportColumns = new List<StructuralPiece>();
+        /// <summary>Duvar, patlama sırasına göre içe/dışa devrildi; patlama itkisi artık ona dokunmaz.</summary>
+        public bool FallDirected { get; set; }
 
         [Tooltip("Parçanın yerleştirildiği yuvanın boyutu (m). Model ölçeği/pivotu ne olursa olsun gerçek boyut.")]
         public Vector3 SlotSize;

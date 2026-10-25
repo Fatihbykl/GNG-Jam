@@ -62,9 +62,10 @@ namespace KatKat
 
             if (kb != null)
             {
-                if (kb.digit1Key.wasPressedThisFrame) _gm.SelectRopeType(0);
-                if (kb.digit2Key.wasPressedThisFrame) _gm.SelectRopeType(1);
-                if (kb.digit3Key.wasPressedThisFrame) _gm.SelectRopeType(2);
+                for (int i = 0; i < _gm.RopeTypes.Length && i < 9; i++)
+                {
+                    if (kb[Key.Digit1 + i].wasPressedThisFrame) _gm.SelectRopeType(i);
+                }
                 if (kb.escapeKey.wasPressedThisFrame) Cancel();
             }
 
@@ -202,7 +203,15 @@ namespace KatKat
             _preview.SetPosition(0, start);
             _preview.SetPosition(1, end);
             _preview.enabled = true;
-            HoverText = $"{length:0.0} m  •  maliyet {cost:0.0}" + (HoverText != null ? $"\n{HoverText}" : "");
+            var type = _gm.RopeTypes[_gm.SelectedRopeType];
+            string net = "";
+            if (type.IsNet && _pending.Item != null)
+            {
+                int n = _gm.NetCandidates(_pending.Item, type).Count;
+                net = n > 0 ? $"\nFile: yakındaki {n} küçük eşya pakete katılır (+{n * type.NetCostPerItem:0.0} ve ip)"
+                    : "\nFile: yakında paketlenecek küçük eşya yok";
+            }
+            HoverText = $"{length:0.0} m  •  maliyet {cost:0.0}" + net + (HoverText != null ? $"\n{HoverText}" : "");
         }
 
         /// <summary>

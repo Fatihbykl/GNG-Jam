@@ -117,7 +117,19 @@ namespace KatKat
                 ItemDefinitionSO.Create("Kitaplık", ItemSize.Big, 40f, new Vector3(1.2f, 1.9f, 0.4f), new Color(0.55f, 0.35f, 0.2f), 3),
                 ItemDefinitionSO.Create("Koli", ItemSize.Small, 8f, new Vector3(0.5f, 0.5f, 0.5f), new Color(0.85f, 0.65f, 0.35f)),
                 ItemDefinitionSO.Create("Lamba", ItemSize.Small, 4f, new Vector3(0.3f, 0.6f, 0.3f), new Color(0.3f, 0.75f, 0.85f)),
+                CreateGasTank(),
             };
+        }
+
+        /// <summary>Gaz tüpü (GDD): serbest kalırsa ikinci patlama; mutlaka sabitlenmeli. İkinci kattan itibaren çıkar.</summary>
+        public static ItemDefinitionSO CreateGasTank()
+        {
+            var d = ItemDefinitionSO.Create("Gaz tüpü", ItemSize.Small, 15f, new Vector3(0.35f, 0.9f, 0.35f),
+                new Color(0.9f, 0.2f, 0.15f));
+            d.Volatile = true;
+            d.MinFloor = 1;
+            d.SpawnWeight = 0.6f;
+            return d;
         }
 
         /// <summary>Verilen boyut ve kat için ağırlıklı rastgele eşya seçer.</summary>

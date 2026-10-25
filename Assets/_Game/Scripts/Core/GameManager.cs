@@ -39,6 +39,11 @@ namespace KatKat
         public Floor BelowFloor { get; private set; }
         public RopeBudget Budget { get; private set; }
         public FloorResult LastResult { get; private set; }
+        /// <summary>Sonuç ekranındaki eşya başına neden-sonuç satırları.</summary>
+        public List<ItemReport> LastItemReports { get; private set; } = new List<ItemReport>();
+        /// <summary>Patlama sürerken anlık ceza (HUD çubuğu için, kısa aralıklarla yenilenir).</summary>
+        public FloorResult LiveResult { get; private set; }
+        public int PenaltyLimit => FloorDifficulty.For(FloorNumber, Config).PenaltyLimit;
         public int SelectedRopeType { get; private set; }
         public string Message { get; private set; }
         public int FloorNumber => Run.FloorsDescended;
@@ -48,6 +53,7 @@ namespace KatKat
         public SafeZone Zone { get; private set; }
         public DetonationSequence Sequence { get; private set; }
         public CollapsePreview Collapse { get; private set; }
+        public ImpactPreview Impact { get; private set; }
         public CollapseShove Shove { get; private set; }
         public SlowMoDirector SlowMo { get; private set; }
         public RopePlacer Placer { get; private set; }
@@ -61,6 +67,7 @@ namespace KatKat
         private RopePlan _plan = new RopePlan();
         private List<(int index, float delay)> _chargeSetup;
         private float _messageUntil;
+        private float _nextLiveScore;
         private Coroutine _settleRoutine;
         private readonly List<NeighborFacade> _facades = new List<NeighborFacade>();
 
@@ -69,6 +76,7 @@ namespace KatKat
         private void Awake()
         {
             if (RopeTypes == null || RopeTypes.Length == 0) RopeTypes = RopeTypeSO.CreateDefaults();
+            EnsureNetType();
             if (Content == null) Content = GameContentSO.CreateDefault();
 
             Physics.defaultSolverIterations = 12;
@@ -81,13 +89,28 @@ namespace KatKat
             Sequence.ChargeFiring += OnChargeFiring;
             Collapse = gameObject.AddComponent<CollapsePreview>();
             Collapse.Init(this);
+            Impact = gameObject.AddComponent<ImpactPreview>();
+            Impact.Init(this);
             Shove = gameObject.AddComponent<CollapseShove>();
+            Shove.GasIgnited += OnGasIgnited;
+            Shove.GasResolved += OnGasResolved;
             SlowMo = gameObject.AddComponent<SlowMoDirector>();
             SlowMo.Init(this);
             Placer = gameObject.AddComponent<RopePlacer>();
             Placer.Init(this, Orbit);
             gameObject.AddComponent<GameHUD>().Init(this);
             gameObject.AddComponent<ItemIndicators>().Init(this);
+        }
+
+        /// <summary>Sahnedeki ip listesinde file yoksa varsayılan file eklenir (Data/Rope_Net ile ayarlanabilir).</summary>
+        private void EnsureNetType()
+        {
+            foreach (var t in RopeTypes)
+            {
+                if (t != null && t.IsNet) return;
+            }
+            var list = new List<RopeTypeSO>(RopeTypes) { RopeTypeSO.CreateNet() };
+            RopeTypes = list.ToArray();
         }
 
         private void EnsureCameraAndLight()
@@ -161,6 +184,7 @@ namespace KatKat
             _floorStartBudget = budget;
             Ropes.Clear();
             NeighborBuilding.HitBodies.Clear();
+            LiveResult = default;
 
             Sequence.SetCharges(ActiveFloor.Charges);
             if (chargeSetup != null) ApplyChargeSetup(chargeSetup);
@@ -197,8 +221,9 @@ namespace KatKat
             AudioDirector.Play(Sound.Detonate);
             SlowMo.Begin(Config.slowMoCharges);
             Orbit.SetCinematic(true);
-            // Planlamadaki çöküş oku, eşyaların kayacağı yönü belirler
-            Shove.Arm(ActiveFloor, Collapse.HasDirection ? Collapse.Direction : Vector3.zero, Collapse.Strength, Config);
+            // Planlamadaki çöküş oku, eşyaların kayacağı ve duvarların devrileceği yönü belirler
+            Shove.Arm(ActiveFloor, Collapse.HasDirection ? Collapse.Direction : Vector3.zero, Collapse.Strength, FloorNumber,
+                Config);
             Sequence.Play(Config, Visuals.useCustomBlastFx ? null : ExplosionVfxPrefab, () => _settleRoutine = StartCoroutine(SettleRoutine()));
         }
 
@@ -207,10 +232,32 @@ namespace KatKat
             if (link.Armed) Orbit.ShakeFrom(link.LastSnapPoint, Orbit.ShakeOnCharge * 0.4f);
         }
 
+        /// <summary>Bağsız gaz tüpünün fitili yandı: ağır çekim açılır, oyuncu ip atarak söndürebilir.</summary>
+        private void OnGasIgnited(Item item)
+        {
+            GameHUD.Float(item.Body.worldCenterOfMass + Vector3.up * 0.8f, "FİTİL!", new Color(1f, 0.55f, 0.1f));
+            ShowMessage($"{item.DisplayName} tutuştu! Tıklayıp ip at, yoksa patlar");
+            SlowMo.TryTrigger();
+        }
+
+        private void OnGasResolved(Item item, bool exploded)
+        {
+            Vector3 pos = item.Body.worldCenterOfMass;
+            if (!exploded)
+            {
+                GameHUD.Float(pos + Vector3.up * 0.8f, "SÖNDÜ", new Color(0.45f, 0.95f, 0.5f));
+                ShowMessage($"{item.DisplayName} sabitlendi, fitil söndü");
+                return;
+            }
+            Orbit.ShakeFrom(pos, Orbit.ShakeOnCharge * 1.3f);
+            SlowMo.HitStop(Visuals.hitStopDuration, Visuals.hitStopScale);
+            ShowMessage($"{item.DisplayName} patladı!");
+        }
+
         /// <summary>Şarjlı kolon patlarken ona bağlı ipler boşa çıkar.</summary>
         private void OnChargeFiring(ExplosiveCharge charge)
         {
-            Shove.OnChargeFired();
+            Shove.OnChargeFired(charge);
             Orbit.ShakeFrom(charge.LabelPosition, Orbit.ShakeOnCharge);
             SlowMo.HitStop(Visuals.hitStopDuration, Visuals.hitStopScale);
             int released = 0;
@@ -261,7 +308,8 @@ namespace KatKat
 
             SlowMo.End();
             Orbit.SetCinematic(false);
-            LastResult = FloorScorer.Evaluate(ActiveFloor, Zone, NeighborBuilding.HitBodies);
+            LastResult = FloorScorer.Evaluate(ActiveFloor, Zone, NeighborBuilding.HitBodies, PenaltyLimit);
+            LastItemReports = FloorScorer.DescribeItems(ActiveFloor, Zone, Ropes);
             State = GameState.Results;
             _settleRoutine = null;
         }
@@ -404,12 +452,64 @@ namespace KatKat
             var link = RopeLink.Create(ActiveFloor.transform, type, typeIndex, a, b, length, cost, Config);
             link.Broken += OnRopeBroken;
             Ropes.Add(link);
+            if (type.IsNet) WrapNet(link, a.Item != null ? a.Item : b.Item);
             return link;
+        }
+
+        /// <summary>Filenin paketleyeceği eşyalar: yakındaki bağsız küçük eşyalar, en yakından başlayarak.</summary>
+        public List<Item> NetCandidates(Item host, RopeTypeSO type)
+        {
+            var result = new List<Item>();
+            if (host == null || type == null || !type.IsNet || ActiveFloor == null) return result;
+            Vector3 center = host.Body.worldCenterOfMass;
+            foreach (var item in ActiveFloor.Items)
+            {
+                if (item == null || item == host || !item.CanBeTied || item.IsTied || item.Size != ItemSize.Small ||
+                    !item.gameObject.activeInHierarchy) continue;
+                Vector3 d = item.Body.worldCenterOfMass - center;
+                d.y = 0f;
+                if (d.magnitude <= type.NetRadius) result.Add(item);
+            }
+            result.Sort((x, y) => Vector3.Distance(x.Body.worldCenterOfMass, center)
+                .CompareTo(Vector3.Distance(y.Body.worldCenterOfMass, center)));
+            if (result.Count > type.NetMaxItems) result.RemoveRange(type.NetMaxItems, result.Count - type.NetMaxItems);
+            return result;
+        }
+
+        /// <summary>File: yakındaki küçük eşyaları kısa iplerle ana eşyaya paketler; paket tek kütle gibi davranır.</summary>
+        private void WrapNet(RopeLink net, Item host)
+        {
+            if (host == null) return;
+            var type = net.Type;
+            int wrapped = 0;
+            foreach (var item in NetCandidates(host, type))
+            {
+                Vector3 from = item.Body.worldCenterOfMass, to = host.Body.worldCenterOfMass;
+                float length = Mathf.Max(0.5f, Vector3.Distance(from, to) * Config.ropeSlack);
+                float cost = RopeBudget.CostOf(length, type) + type.NetCostPerItem;
+                if (length > Config.maxRopeLength || !Budget.TrySpend(cost)) break;
+
+                var child = RopeLink.Create(ActiveFloor.transform, type, net.TypeIndex, RopeEndpoint.ForItem(item, from),
+                    RopeEndpoint.ForItem(host, to), length, cost, Config);
+                child.IsNetChild = true;
+                child.Broken += OnRopeBroken;
+                if (State != GameState.Planning) child.Arm(); // ağır çekimde atılan file hemen devrede
+                net.NetChildren.Add(child);
+                Ropes.Add(child);
+                wrapped++;
+            }
+            if (wrapped > 0) ShowMessage($"File: {wrapped} eşya {host.DisplayName} ile paketlendi");
         }
 
         public void RemoveRope(RopeLink link)
         {
             if (State != GameState.Planning || link == null) return;
+            foreach (var child in link.NetChildren)
+            {
+                if (child == null || !Ropes.Remove(child)) continue;
+                Budget.Refund(child.Cost);
+                Destroy(child.gameObject);
+            }
             Budget.Refund(link.Cost);
             Ropes.Remove(link);
             Destroy(link.gameObject);
@@ -472,7 +572,8 @@ namespace KatKat
             var plan = new RopePlan();
             foreach (var link in Ropes)
             {
-                if (link != null) plan.Entries.Add(link.ToPlanEntry());
+                // Filenin paket ipleri, file yeniden kurulunca kendiliğinden gelir
+                if (link != null && !link.IsNetChild) plan.Entries.Add(link.ToPlanEntry());
             }
             return plan;
         }
@@ -508,6 +609,12 @@ namespace KatKat
         private void Update()
         {
             if (Message != null && Time.unscaledTime > _messageUntil) Message = null;
+
+            if ((State == GameState.Detonating || State == GameState.Settling) && Time.unscaledTime >= _nextLiveScore)
+            {
+                _nextLiveScore = Time.unscaledTime + 0.25f;
+                LiveResult = FloorScorer.Evaluate(ActiveFloor, Zone, NeighborBuilding.HitBodies, PenaltyLimit);
+            }
 
             var kb = Keyboard.current;
             if (kb == null) return;

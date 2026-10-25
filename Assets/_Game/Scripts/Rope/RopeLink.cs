@@ -77,6 +77,10 @@ namespace KatKat
         public RopeEndpoint B;
         public float Length;
         public float Cost;
+        /// <summary>Bir filenin küçük eşyayı ana eşyaya bağlayan paket ipi.</summary>
+        public bool IsNetChild;
+        /// <summary>File ise paketlediği eşyaların ipleri (silinince onlar da gider).</summary>
+        public readonly System.Collections.Generic.List<RopeLink> NetChildren = new System.Collections.Generic.List<RopeLink>();
 
         public bool IsBroken { get; private set; }
         /// <summary>Bağlı olduğu şarjlı kolon patladı; ip bir ucundan serbest sallanıyor.</summary>
@@ -88,6 +92,7 @@ namespace KatKat
         public float PeakForce { get; private set; }
         public float EffectiveBreakForce => Type.BreakForce * BreakMultiplier;
         public float ForceRatio => IsHolding ? CurrentForce / Mathf.Max(1f, EffectiveBreakForce) : 0f;
+        public float PeakRatio => PeakForce / Mathf.Max(1f, EffectiveBreakForce);
 
         /// <summary>Uçlardan biri bu kolondaki ankraja bağlıysa o kolon.</summary>
         public StructuralPiece AnchorColumn
@@ -229,8 +234,17 @@ namespace KatKat
             _rope.UnpinParticle(index);
             IsReleased = true;
             CurrentForce = 0f;
-            if (A.Item != null) A.Item.RemoveTie();
-            if (B.Item != null) B.Item.RemoveTie();
+            string label = column.Charge != null ? column.Charge.Label : "?";
+            if (A.Item != null)
+            {
+                A.Item.RemoveTie();
+                A.Item.NoteRopeReleased(label);
+            }
+            if (B.Item != null)
+            {
+                B.Item.RemoveTie();
+                B.Item.NoteRopeReleased(label);
+            }
             return true;
         }
 
@@ -305,6 +319,11 @@ namespace KatKat
 
             if (Armed)
             {
+                if (wasHolding)
+                {
+                    if (A.Item != null) A.Item.NoteRopeSnapped(Type.DisplayName);
+                    if (B.Item != null) B.Item.NoteRopeSnapped(Type.DisplayName);
+                }
                 Vector3 p = _snapPoint ?? MidPoint();
                 LastSnapPoint = p;
                 Vfx.RopeSnap(p, Type.Color);

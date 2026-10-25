@@ -19,6 +19,16 @@ namespace KatKat
         public Color Color = Color.white;
         public Material Material;
 
+        [Header("File")]
+        [Tooltip("0'dan büyükse bu bir filedir: bağlanan eşyanın bu yarıçapındaki (m) bağsız küçük eşyalar ona paketlenir.")]
+        public float NetRadius;
+        [Tooltip("Filenin en fazla kaç küçük eşyayı toplayacağı.")]
+        public int NetMaxItems = 3;
+        [Tooltip("Pakete katılan her eşya için bütçeden düşülen ek miktar.")]
+        public float NetCostPerItem = 1f;
+
+        public bool IsNet => NetRadius > 0f;
+
         public Material ResolveMaterial() => Material != null ? Material : GameMaterials.Get(Color);
 
         public static RopeTypeSO Create(string name, float cost, float breakForce, float stretch, float compliance,
@@ -37,7 +47,7 @@ namespace KatKat
             return t;
         }
 
-        /// <summary>GDD'deki üç temel ip. Asset atanmamışsa bunlar kullanılır.</summary>
+        /// <summary>GDD'deki ip türleri. Asset atanmamışsa bunlar kullanılır.</summary>
         public static RopeTypeSO[] CreateDefaults()
         {
             return new[]
@@ -45,7 +55,18 @@ namespace KatKat
                 Create("İnce ip", 1f, 1400f, 1.5f, 0f, 0.04f, 0.025f, new Color(0.93f, 0.85f, 0.65f)),
                 Create("Çelik halat", 2.5f, 9000f, 1.3f, 0f, 0.3f, 0.045f, new Color(0.55f, 0.58f, 0.62f)),
                 Create("Elastik ip", 1.5f, 3500f, 2.2f, 0.5f, 0.06f, 0.035f, new Color(0.35f, 0.85f, 0.45f)),
+                CreateNet(),
             };
+        }
+
+        /// <summary>File: orta dayanım; birçok küçük eşyayı tek seferde sarar (GDD).</summary>
+        public static RopeTypeSO CreateNet()
+        {
+            var t = Create("File", 1.5f, 3000f, 1.6f, 0.2f, 0.05f, 0.03f, new Color(0.95f, 0.55f, 0.85f));
+            t.NetRadius = 1.6f;
+            t.NetMaxItems = 3;
+            t.NetCostPerItem = 1f;
+            return t;
         }
     }
 }

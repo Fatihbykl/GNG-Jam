@@ -78,9 +78,11 @@ namespace KatKat.Editor
                 () => MarkerPrefab("ChargeMarker", PrimitiveType.Cube, new Vector3(0.5f, 0.35f, 0.5f), GameMaterials.ChargeColor));
 
             if (content.Items == null) content.Items = new List<ItemDefinitionSO>();
-            if (content.Items.Count == 0)
+            // Eksik varsayılan eşyaları (ör. sonradan eklenen gaz tüpü) adına göre tamamla; mevcutlara dokunma
+            foreach (var def in GameContentSO.CreateDefaultItems())
             {
-                foreach (var def in GameContentSO.CreateDefaultItems()) content.Items.Add(EnsureItem(def));
+                if (content.Items.Exists(d => d != null && d.DisplayName == def.DisplayName)) Object.DestroyImmediate(def);
+                else content.Items.Add(EnsureItem(def));
             }
 
             if (created) AssetDatabase.CreateAsset(content, ContentPath);
