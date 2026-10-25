@@ -102,6 +102,36 @@ namespace KatKat
             return go;
         }
 
+        /// <summary>
+        /// Editör için: patlama efektinin oyundaki şablonla aynı, bağımsız bir kopyası (prefab olarak kaydetmek için).
+        /// Malzemeler ve doku yeni kurulur ve döndürülür; çağıran onları asset olarak kaydetmeli.
+        /// Oyundaki şablonlara ve malzemelere dokunmaz.
+        /// </summary>
+        public static GameObject BuildBlastStandalone(GameContentSO content, out Material alpha, out Material additive,
+            out Material debris, out Texture2D soft)
+        {
+            var saved = (_content, _holder, _alpha, _additive, _debris, _line, _soft);
+            try
+            {
+                _content = content;
+                _holder = null;
+                BuildMaterials();
+                // Beton malzemesi GameMaterials önbelleğinden gelir; prefab kendi kopyasını taşısın
+                _debris = new Material(_debris) { name = "Vfx_Debris" };
+                var root = BuildBlast();
+                alpha = _alpha;
+                additive = _additive;
+                debris = _debris;
+                soft = _soft;
+                Object.DestroyImmediate(_line);
+                return root;
+            }
+            finally
+            {
+                (_content, _holder, _alpha, _additive, _debris, _line, _soft) = saved;
+            }
+        }
+
         #endregion
 
         #region Şablonlar
