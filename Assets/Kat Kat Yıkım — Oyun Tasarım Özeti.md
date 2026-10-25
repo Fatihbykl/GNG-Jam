@@ -1,7 +1,6 @@
 # Kat Kat Yıkım — Oyun Tasarım Özeti
 
 Oct 24, 2026 · @Fatih
-
 ## Özet
 
 Sonsuz yükseklikte bir kuleyi yukarıdan aşağı kat kat patlatıyoruz; amaç, içindeki eşyaları iplerle sabitleyip enkazın güvenli bölgenin dışına taşmasını önlemek. Tek cümleyle: **kaosu planla, patlat ve en kritik anda müdahale et.**

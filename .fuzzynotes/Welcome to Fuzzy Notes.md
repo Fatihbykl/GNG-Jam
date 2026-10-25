@@ -3,7 +3,7 @@ id: 3b3a3c4f
 title: "Welcome to Fuzzy Notes"
 tags: [guide, welcome]
 created: 2026-10-24T01:53:15.5411425Z
-updated: 2026-10-24T01:53:15.5538332Z
+updated: 2026-10-25T11:49:35.9158203Z
 ---
 # Welcome to Fuzzy Notes! 📝
 
@@ -19,10 +19,10 @@ Plain Markdown files in `.fuzzynotes/`, edited in place with Live Preview — co
 - **Tasks**: checkboxes are tracked project-wide — open the **Tasks** board. Ctrl+Enter toggles a task.
 
 ## 📌 Try it
-- [ ] Create a note with `Ctrl+Alt+N`
-- [ ] Open today's daily note from the 📅 button
-- [ ] Fold this section with the ▾ arrow next to the heading
-- [ ] Search with `tag:guide` or `task:todo` in the sidebar
+- [x] Create a note with `Ctrl+Alt+N`
+- [x] Open today's daily note from the 📅 button
+- [x] Fold this section with the ▾ arrow next to the heading
+- [x] Search with `tag:guide` or `task:todo` in the sidebar
 
 | Shortcut | Action |
 | --- | --- |

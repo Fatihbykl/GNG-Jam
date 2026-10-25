@@ -33,7 +33,7 @@ namespace KatKat
         [Tooltip("0 = her oyunda rastgele.")]
         public int RunSeed;
 
-        public GameState State { get; private set; }
+        public GameState State { get; set; }
         public RunState Run { get; private set; }
         public Floor ActiveFloor { get; private set; }
         public Floor BelowFloor { get; private set; }
@@ -160,7 +160,7 @@ namespace KatKat
 
             Run = new RunState(Config, RunSeed != 0 ? RunSeed : Random.Range(1, 99999));
             _floorIndex = 0;
-            BuildNeighbors();
+            //BuildNeighbors();
 
             ActiveFloor = BuildFloor(_floorIndex);
             BelowFloor = BuildFloor(_floorIndex + 1);
@@ -403,13 +403,13 @@ namespace KatKat
         {
             if (_towerBody == null)
             {
-                _towerBody = GameMaterials.CreateBox("TowerBelow", _world, Vector3.zero,
-                    new Vector3(Config.FloorWidth, 300f, Config.FloorDepth), GameMaterials.TowerColor);
+                //_towerBody = GameMaterials.CreateBox("TowerBelow", _world, Vector3.zero,
+                //    new Vector3(Config.FloorWidth, 300f, Config.FloorDepth), GameMaterials.TowerColor);
             }
 
-            float top = BelowFloor.BaseY;
-            _towerBody.transform.position = new Vector3(0f, top - 150f, 0f);
-            foreach (var facade in _facades) facade.Follow(ActiveFloor.BaseY);
+            //float top = BelowFloor.BaseY;
+            //_towerBody.transform.position = new Vector3(0f, top - 150f, 0f);
+            //foreach (var facade in _facades) facade.Follow(ActiveFloor.BaseY);
         }
 
         private void BuildNeighbors()

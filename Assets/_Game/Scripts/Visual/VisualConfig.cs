@@ -34,19 +34,19 @@ namespace KatKat
         [Range(0f, 5f)] public float atmosphereThickness = 0.9f;
         [Range(0f, 8f)] public float skyExposure = 1.4f;
         [Tooltip("Gökyüzü yoksa (materyal bulunamazsa) kullanılan düz renk.")]
-        public Color fallbackBackground = new Color(0.62f, 0.8f, 0.95f);
+        public Color fallbackBackground = new Color(138/255f, 124/255f, 194/255f);
 
         [Header("Sis (aşağıdaki katlar kaybolur)")]
         public bool fog = true;
-        public Color fogColor = new Color(0.74f, 0.82f, 0.94f);
+        public Color fogColor = new Color(138/255f, 124/255f, 194/255f);
         public float fogStart = 35f;
         public float fogEnd = 130f;
 
         [Header("Yükseklik sisi (binanın altı)")]
         public bool heightFog = true;
-        public Color heightFogColor = new Color(0.8f, 0.86f, 0.95f);
+        public Color heightFogColor = new Color(138/255f, 124/255f, 194/255f);
         [Tooltip("Sisin üst yüzeyi aktif katın tabanından kaç metre aşağıda.")]
-        public float heightFogOffset = 3.5f;
+        public float heightFogOffset = 1.5f;
         [Tooltip("Yüzeyin altında metre başına yoğunluk; büyüdükçe kule daha çabuk kaybolur.")]
         public float heightFogDensity = 0.22f;
         [Range(0f, 1f)] public float heightFogNoise = 0.35f;

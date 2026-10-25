@@ -31,6 +31,7 @@ namespace KatKat
 
             var columns = BuildColumns(floor, cfg, PickBearing(cfg, rng, diff.BearingRatio));
             BuildCeiling(floor, cfg, columns);
+            //BuildFloor(floor, cfg, columns);
             BuildWalls(floor, cfg, columns, rng);
 
             var occupied = new List<Vector3>(); // xz + yarıçap (y bileşeninde)
@@ -110,6 +111,33 @@ namespace KatKat
             var fp = floor.Footprint;
             var tiles = new StructuralPiece[cfg.gridX, cfg.gridZ];
             float y = floor.BaseY + cfg.floorHeight - cfg.slabThickness * 0.5f;
+
+            for (int i = 0; i < cfg.gridX; i++)
+            for (int j = 0; j < cfg.gridZ; j++)
+            {
+                var pos = new Vector3(fp.xMin + (i + 0.5f) * cfg.cellSize, y, fp.yMin + (j + 0.5f) * cfg.cellSize);
+                var go = SpawnStructure(floor, floor.Content.CeilingPrefab, $"Ceiling_{i}_{j}", pos, Quaternion.identity,
+                    new Vector3(cfg.cellSize, cfg.slabThickness, cfg.cellSize), GameMaterials.Concrete);
+                var tile = AddPiece(floor, go, PieceKind.Ceiling, cfg.slabMass, pos,
+                    new Vector3(cfg.cellSize, cfg.slabThickness, cfg.cellSize));
+                Fracturable.TryAdd(tile, floor, cfg);
+                tiles[i, j] = tile;
+                floor.CeilingTiles.Add(tile);
+
+                JoinToColumn(tile, columns[i, j], cfg);
+                JoinToColumn(tile, columns[i + 1, j], cfg);
+                JoinToColumn(tile, columns[i, j + 1], cfg);
+                JoinToColumn(tile, columns[i + 1, j + 1], cfg);
+                if (i > 0) JoinPieces(tile, tiles[i - 1, j], cfg);
+                if (j > 0) JoinPieces(tile, tiles[i, j - 1], cfg);
+            }
+        }
+        
+        private static void BuildFloor(Floor floor, GameConfig cfg, StructuralPiece[,] columns)
+        {
+            var fp = floor.Footprint;
+            var tiles = new StructuralPiece[cfg.gridX, cfg.gridZ];
+            float y = floor.BaseY + cfg.floorHeight - cfg.slabThickness * 0.5f - 3f;
 
             for (int i = 0; i < cfg.gridX; i++)
             for (int j = 0; j < cfg.gridZ; j++)

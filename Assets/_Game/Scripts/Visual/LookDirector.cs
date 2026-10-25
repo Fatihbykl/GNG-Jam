@@ -40,7 +40,7 @@ namespace KatKat
             camData.requiresDepthTexture = true;
 
             BuildVolume();
-            gameObject.AddComponent<HeightFog>().Init(gm, cam);
+            //gameObject.AddComponent<HeightFog>().Init(gm, cam);
 
             _sun = FindSun();
             _fill = new GameObject("FillLight").AddComponent<Light>();
@@ -54,7 +54,7 @@ namespace KatKat
                 _sky = new Material(RenderSettings.skybox) { name = "KatKat_Sky" };
                 RenderSettings.skybox = _sky;
             }
-            cam.clearFlags = _sky != null ? CameraClearFlags.Skybox : CameraClearFlags.SolidColor;
+            cam.clearFlags = CameraClearFlags.SolidColor;
 
             _slowMoWeight = 0f;
             Apply();
@@ -132,13 +132,13 @@ namespace KatKat
                 _sky.SetFloat("_AtmosphereThickness", v.atmosphereThickness);
                 _sky.SetFloat("_Exposure", v.skyExposure);
             }
-            _cam.backgroundColor = v.fallbackBackground;
+            //_cam.backgroundColor = v.fallbackBackground;
 
-            RenderSettings.fog = v.fog;
-            RenderSettings.fogMode = FogMode.Linear;
-            RenderSettings.fogColor = v.fogColor;
-            RenderSettings.fogStartDistance = v.fogStart;
-            RenderSettings.fogEndDistance = v.fogEnd;
+            // RenderSettings.fog = v.fog;
+            // RenderSettings.fogMode = FogMode.Linear;
+            // RenderSettings.fogColor = v.fogColor;
+            // RenderSettings.fogStartDistance = v.fogStart;
+            // RenderSettings.fogEndDistance = v.fogEnd;
 
             _tonemapping.mode.value = v.tonemapping;
             _color.postExposure.value = v.postExposure;

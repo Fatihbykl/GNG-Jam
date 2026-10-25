@@ -179,8 +179,8 @@ Camera:
   m_GameObject: {fileID: 1278367789}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0.5411765, g: 0.4862745, b: 0.7607843, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -371,9 +371,9 @@ MonoBehaviour:
     startLives: 3
     slowMoCharges: 2
     safeZoneMargin: 1.5
-    penaltyLimit: 15
-    penaltyLimitDecreasePerFloor: 0.4
-    minPenaltyLimit: 8
+    penaltyLimitItemRatio: 0.5
+    penaltyLimitRatioDecreasePerFloor: 0.03
+    minPenaltyLimitItemRatio: 0.25
     slowMoScale: 0.15
     slowMoDuration: 1.5
     slowMoAutoForceRatio: 0.8
@@ -405,6 +405,13 @@ MonoBehaviour:
     fogColor: {r: 0.74, g: 0.82, b: 0.94, a: 1}
     fogStart: 35
     fogEnd: 130
+    heightFog: 1
+    heightFogColor: {r: 0.8, g: 0.86, b: 0.95, a: 1}
+    heightFogOffset: 3.5
+    heightFogDensity: 0.22
+    heightFogNoise: 0.35
+    heightFogNoiseScale: 0.06
+    heightFogNoiseSpeed: 0.35
     tonemapping: 2
     postExposure: 0.7
     contrast: 6

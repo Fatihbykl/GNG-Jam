@@ -135,7 +135,7 @@ namespace KatKat
 
             // Sıra değişince ok zıplamasın, yumuşakça dönüp uzasın
             float k = 1f - Mathf.Exp(-FollowSpeed * Time.unscaledDeltaTime);
-            bool fresh = !_arrow.gameObject.activeSelf || _shownLength <= 0f;
+            bool fresh = _shownLength <= 0f;
             _shownDir = fresh ? Direction : Vector3.Slerp(_shownDir, Direction, k).normalized;
             _shownLength = fresh ? length : Mathf.Lerp(_shownLength, length, k);
             Tip = Center + _shownDir * _shownLength;
