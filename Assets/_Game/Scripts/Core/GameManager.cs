@@ -28,7 +28,8 @@ namespace KatKat
         public VisualConfig Visuals = new VisualConfig();
         [Tooltip("Yapı parçalarının ve eşyaların prefabları. Boşsa prototip küpler kullanılır.")]
         public GameContentSO Content;
-        public RopeTypeSO[] RopeTypes;
+        [Tooltip("Oyundaki tek ip türü (ör. Data/Rope_Thin). Boşsa kodda tanımlı varsayılan ip kullanılır.")]
+        public RopeTypeSO Rope;
         public GameObject ExplosionVfxPrefab;
         [Tooltip("0 = her oyunda rastgele.")]
         public int RunSeed;
@@ -44,7 +45,9 @@ namespace KatKat
         /// <summary>Patlama sürerken anlık ceza (HUD çubuğu için, kısa aralıklarla yenilenir).</summary>
         public FloorResult LiveResult { get; private set; }
         public int PenaltyLimit => FloorScorer.PenaltyLimitFor(ActiveFloor, FloorNumber, Config);
-        public int SelectedRopeType { get; private set; }
+        /// <summary>Tek elemanlı: oyunda yalnızca <see cref="Rope"/> var. İp planları tür sırasını sakladığı için dizi kaldı.</summary>
+        public RopeTypeSO[] RopeTypes { get; private set; }
+        public int SelectedRopeType => 0;
         public string Message { get; private set; }
         public int FloorNumber => Run.FloorsDescended;
 
@@ -75,8 +78,8 @@ namespace KatKat
 
         private void Awake()
         {
-            if (RopeTypes == null || RopeTypes.Length == 0) RopeTypes = RopeTypeSO.CreateDefaults();
-            EnsureNetType();
+            if (Rope == null) Rope = RopeTypeSO.CreateDefault();
+            RopeTypes = new[] { Rope };
             if (Content == null) Content = GameContentSO.CreateDefault();
 
             Physics.defaultSolverIterations = 12;
@@ -101,17 +104,6 @@ namespace KatKat
             Placer.Init(this, Orbit);
             gameObject.AddComponent<GameHUD>().Init(this);
             gameObject.AddComponent<ItemIndicators>().Init(this);
-        }
-
-        /// <summary>Sahnedeki ip listesinde file yoksa varsayılan file eklenir (Data/Rope_Net ile ayarlanabilir).</summary>
-        private void EnsureNetType()
-        {
-            foreach (var t in RopeTypes)
-            {
-                if (t != null && t.IsNet) return;
-            }
-            var list = new List<RopeTypeSO>(RopeTypes) { RopeTypeSO.CreateNet() };
-            RopeTypes = list.ToArray();
         }
 
         private void EnsureCameraAndLight()
@@ -244,6 +236,7 @@ namespace KatKat
         private void OnGasIgnited(Item item)
         {
             GameHUD.Float(item.Body.worldCenterOfMass + Vector3.up * 0.8f, "FİTİL!", new Color(1f, 0.55f, 0.1f));
+            AudioDirector.Play(Sound.Fuse, item.Body.worldCenterOfMass);
             ShowMessage($"{item.DisplayName} tutuştu! Tıklayıp ip at, yoksa patlar");
             SlowMo.TryTrigger();
         }
@@ -254,6 +247,7 @@ namespace KatKat
             if (!exploded)
             {
                 GameHUD.Float(pos + Vector3.up * 0.8f, "SÖNDÜ", new Color(0.45f, 0.95f, 0.5f));
+                AudioDirector.Play(Sound.Extinguish, pos);
                 ShowMessage($"{item.DisplayName} sabitlendi, fitil söndü");
                 return;
             }
@@ -439,11 +433,6 @@ namespace KatKat
 
         #region İp işlemleri
 
-        public void SelectRopeType(int index)
-        {
-            if (index >= 0 && index < RopeTypes.Length) SelectedRopeType = index;
-        }
-
         public RopeLink TryCreateRope(RopeEndpoint a, RopeEndpoint b, int typeIndex, out string error)
         {
             error = null;
@@ -542,6 +531,7 @@ namespace KatKat
             if (!Budget.TrySpend(Config.reinforceCost))
             {
                 ShowMessage("Destek için bütçe yok");
+                AudioDirector.Play(Sound.Error);
                 return;
             }
             link.Reinforce(Config.reinforceMultiplier);
@@ -571,6 +561,7 @@ namespace KatKat
             if (best == null)
             {
                 ShowMessage("Yakında ankraj yok");
+                AudioDirector.Play(Sound.Error);
                 return;
             }
 
@@ -579,6 +570,7 @@ namespace KatKat
             if (link == null)
             {
                 ShowMessage(error);
+                AudioDirector.Play(Sound.Error);
                 return;
             }
             link.Arm();

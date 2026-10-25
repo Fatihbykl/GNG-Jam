@@ -48,6 +48,44 @@ namespace KatKat
             (Order[index], Order[target]) = (Order[target], Order[index]);
         }
 
+        /// <summary>Şarjı sıradaki <paramref name="index"/> konumuna taşır (tıklayarak sıralama).</summary>
+        public void MoveTo(ExplosiveCharge charge, int index)
+        {
+            int from = Order.IndexOf(charge);
+            if (IsPlaying || from < 0) return;
+            Order.RemoveAt(from);
+            Order.Insert(Mathf.Clamp(index, 0, Order.Count), charge);
+        }
+
+        /// <summary>Hazır sıra: anahtarı küçük olan önce patlar.</summary>
+        public void SortBy(Func<ExplosiveCharge, float> key)
+        {
+            if (IsPlaying) return;
+            Order.Sort((a, b) => key(a).CompareTo(key(b)));
+        }
+
+        /// <summary>Patlamalar arası tek tempo: tüm şarjların gecikmesi aynı olur.</summary>
+        public void SetSpacing(float delay)
+        {
+            if (IsPlaying) return;
+            foreach (var c in Order) c.Delay = Mathf.Clamp(delay, 0f, ExplosiveCharge.MaxDelay);
+        }
+
+        /// <summary>Tüm şarjların gecikmesi aynıysa o değer, değilse -1.</summary>
+        public float Spacing
+        {
+            get
+            {
+                if (Order.Count == 0) return -1f;
+                float d = Order[0].Delay;
+                foreach (var c in Order)
+                {
+                    if (Mathf.Abs(c.Delay - d) > 0.001f) return -1f;
+                }
+                return d;
+            }
+        }
+
         public void Play(GameConfig config, GameObject vfxPrefab, Action onFinished)
         {
             Stop();

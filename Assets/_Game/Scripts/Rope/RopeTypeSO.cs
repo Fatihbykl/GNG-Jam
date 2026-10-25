@@ -47,7 +47,13 @@ namespace KatKat
             return t;
         }
 
-        /// <summary>GDD'deki ip türleri. Asset atanmamışsa bunlar kullanılır.</summary>
+        /// <summary>Oyundaki tek ip; GameManager'a asset atanmamışsa kullanılır. İnce ip ile çelik halat arası dayanım.</summary>
+        public static RopeTypeSO CreateDefault()
+        {
+            return Create("İp", 1.2f, 3500f, 1.5f, 0f, 0.05f, 0.03f, new Color(0.93f, 0.85f, 0.65f));
+        }
+
+        /// <summary>GDD'deki ip türleri (artık oyunda yalnızca tek ip var; asset üretimi için duruyor).</summary>
         public static RopeTypeSO[] CreateDefaults()
         {
             return new[]

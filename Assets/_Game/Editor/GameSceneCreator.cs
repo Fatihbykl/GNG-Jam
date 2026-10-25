@@ -36,7 +36,7 @@ namespace KatKat.Editor
             light.transform.rotation = Quaternion.Euler(55f, -35f, 0f);
 
             var gm = new GameObject("Game").AddComponent<GameManager>();
-            gm.RopeTypes = EnsureRopeTypeAssets();
+            gm.Rope = EnsureRopeAsset();
             gm.Content = ContentAssetCreator.EnsureContent();
             gm.ExplosionVfxPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(VfxPath);
 
@@ -47,30 +47,19 @@ namespace KatKat.Editor
             Debug.Log($"[KatKat] Sahne oluşturuldu: {ScenePath}. Play'e basarak deneyebilirsin.");
         }
 
-        private static RopeTypeSO[] EnsureRopeTypeAssets()
+        /// <summary>Oyundaki tek ip türü: Data/Rope.asset (yoksa varsayılan değerlerle oluşturulur).</summary>
+        private static RopeTypeSO EnsureRopeAsset()
         {
             if (!AssetDatabase.IsValidFolder(DataFolder)) AssetDatabase.CreateFolder("Assets/_Game", "Data");
 
-            var defaults = RopeTypeSO.CreateDefaults();
-            string[] fileNames = { "Rope_Thin", "Rope_Steel", "Rope_Elastic", "Rope_Net" };
-            var result = new RopeTypeSO[defaults.Length];
+            string path = $"{DataFolder}/Rope.asset";
+            var existing = AssetDatabase.LoadAssetAtPath<RopeTypeSO>(path);
+            if (existing != null) return existing;
 
-            for (int i = 0; i < defaults.Length; i++)
-            {
-                string path = $"{DataFolder}/{fileNames[i]}.asset";
-                var existing = AssetDatabase.LoadAssetAtPath<RopeTypeSO>(path);
-                if (existing != null)
-                {
-                    result[i] = existing;
-                    Object.DestroyImmediate(defaults[i]);
-                    continue;
-                }
-                AssetDatabase.CreateAsset(defaults[i], path);
-                result[i] = defaults[i];
-            }
-
+            var rope = RopeTypeSO.CreateDefault();
+            AssetDatabase.CreateAsset(rope, path);
             AssetDatabase.SaveAssets();
-            return result;
+            return rope;
         }
 
         private static void AddToBuildSettings(string path)
