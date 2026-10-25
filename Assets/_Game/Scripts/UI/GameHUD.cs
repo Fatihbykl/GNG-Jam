@@ -66,7 +66,8 @@ namespace KatKat
         private GameManager _gm;
         private Camera _cam;
         private bool _debug;
-        private GUIStyle _box, _label, _title, _titleCenter, _big, _small, _button, _buttonOn, _buttonCenter, _tag, _banner, _hearts;
+        private GUIStyle _box, _label, _title, _titleCenter, _big, _small, _button, _buttonOn, _buttonCenter, _buttonCenterOn, _tag,
+            _banner, _hearts, _section, _value, _chip, _chipOn, _key;
         private Texture2D _barTex;
 
         private GameState _lastState = (GameState)(-1);
@@ -74,6 +75,11 @@ namespace KatKat
         private int _revealedRows;
         private int _bannerFloor = -1;
         private float _bannerStart = -10f;
+        /// <summary>Sahnedeki numaralara tıklayarak sıralamada sıradaki konum.</summary>
+        private int _pickIndex;
+
+        /// <summary>Tempo seçenekleri: patlamalar arası saniye.</summary>
+        private static readonly (string name, float delay)[] Tempos = { ("Hızlı", 0.2f), ("Orta", 0.5f), ("Yavaş", 1f) };
 
         public void Init(GameManager gm) => _gm = gm;
 
@@ -91,6 +97,7 @@ namespace KatKat
                     _resultsStart = Time.unscaledTime;
                     _revealedRows = 0;
                 }
+                _pickIndex = 0;
                 _lastState = state;
             }
 
@@ -137,70 +144,167 @@ namespace KatKat
         private void DrawStatus()
         {
             var cfg = _gm.Config;
-            var rect = Panel(new Rect(Pad, Pad, 380f, 150f + _gm.RopeTypes.Length * 34f));
-            float x = rect.x + 14f, y = rect.y + 10f, w = rect.width - 28f;
+            var rect = Panel(new Rect(Pad, Pad, 340f, 196f));
+            float x = rect.x + 16f, y = rect.y + 12f, w = rect.width - 32f;
 
             GUI.Label(new Rect(x, y, w, 36f), $"KAT {_gm.FloorNumber + 1}", _title);
-            DrawHearts(new Rect(x + 130f, y + 2f, 130f, 34f), _gm.Run.Lives, cfg.startLives);
-            GUI.Label(new Rect(x + 262f, y + 6f, w - 262f, 30f), $"Skor {_gm.Run.FloorsDescended}", _label);
-            y += 42f;
+            DrawHearts(new Rect(x + w - cfg.startLives * 30f, y + 2f, cfg.startLives * 30f, 34f), _gm.Run.Lives, cfg.startLives);
+            y += 38f;
+            GUI.Label(new Rect(x, y, w, 22f), $"İnilen kat: {_gm.Run.FloorsDescended}", _small);
+            y += 30f;
 
             var budget = _gm.Budget;
-            GUI.Label(new Rect(x, y, w, 24f), $"İp bütçesi  {budget.Remaining:0.0} / {budget.Total:0.0}", _label);
-            y += 26f;
-            DrawBar(new Rect(x, y, w, 12f), budget.Total > 0f ? budget.Remaining / budget.Total : 0f,
-                new Color(0.35f, 0.85f, 0.45f));
-            y += 22f;
-
-            for (int i = 0; i < _gm.RopeTypes.Length; i++)
-            {
-                var t = _gm.RopeTypes[i];
-                bool selected = i == _gm.SelectedRopeType;
-                string text = $"[{i + 1}]  {t.DisplayName}   {t.CostPerMeter:0.0}/m   ~{t.BreakForce:0} N";
-                var r = new Rect(x, y, w, 30f);
-                if (Button(r, text, selected ? _buttonOn : _button)) _gm.SelectRopeType(i);
-                DrawSwatch(new Rect(r.xMax - 18f, r.y + 9f, 10f, 12f), t.Color);
-                y += 34f;
-            }
+            var rope = _gm.Rope;
+            GUI.Label(new Rect(x, y, w, 22f), "İP BÜTÇESİ", _section);
+            GUI.Label(new Rect(x, y - 2f, w, 24f), $"{budget.Remaining:0.0} / {budget.Total:0.0}", _value);
+            y += 24f;
+            float fill = budget.Total > 0f ? budget.Remaining / budget.Total : 0f;
+            DrawBar(new Rect(x, y, w, 10f), fill, fill > 0.35f ? Good : fill > 0.15f ? Warn : Bad);
+            y += 16f;
+            GUI.Label(new Rect(x, y, w, 22f), $"{rope.CostPerMeter:0.0} / metre   •   dayanım ~{rope.BreakForce:0} N", _small);
+            y += 30f;
 
             int slowMo = _gm.SlowMo.IsMonitoring ? _gm.SlowMo.ChargesLeft : cfg.slowMoCharges;
-            GUI.Label(new Rect(x, y + 4f, w, 24f), $"Ağır çekim hakkı: {slowMo}", _label);
+            GUI.Label(new Rect(x, y, w, 22f), "AĞIR ÇEKİM", _section);
+            var old = GUI.color;
+            for (int i = 0; i < cfg.slowMoCharges; i++)
+            {
+                GUI.color = i < slowMo ? Accent : new Color(1f, 1f, 1f, 0.2f);
+                DrawSwatch(new Rect(x + w - (cfg.slowMoCharges - i) * 22f, y + 5f, 16f, 12f), GUI.color);
+            }
+            GUI.color = old;
         }
 
         private void DrawSequencePanel(float width)
         {
             var seq = _gm.Sequence;
-            float h = 190f + seq.Order.Count * 40f + 100f + 96f;
-            var rect = Panel(new Rect(width - 400f - Pad, Pad, 400f, h));
-            float x = rect.x + 14f, y = rect.y + 10f, w = rect.width - 28f;
+            int count = seq.Order.Count;
+            float h = 556f + count * 38f;
+            var rect = Panel(new Rect(width - 380f - Pad, Pad, 380f, h));
+            float x = rect.x + 16f, y = rect.y + 12f, w = rect.width - 32f;
 
             GUI.Label(new Rect(x, y, w, 32f), "PATLAMA SIRASI", _title);
             y += 36f;
-            GUI.Label(new Rect(x, y, w, 40f), "Önce patlayan sıra, binanın çökeceği yönü belirler.", _small);
-            y += 44f;
-            GUI.Label(new Rect(x, y, w, 64f),
-                "Koyu mavi kolon: taşıyıcı, patlamaz.\nŞarjlı kolona bağlı ip, kolon patlayınca boşa çıkar.", _small);
-            y += 70f;
-            DrawPrediction(x, ref y, w);
+            GUI.Label(new Rect(x, y, w, 40f), "İlk patlayan sıra, binanın yıkılacağı yönü belirler.", _small);
+            y += 46f;
 
-            for (int i = 0; i < seq.Order.Count; i++)
+            // Hazır sıralar: yön adları kameraya göre (ekranda sol/sağ, ön/arka)
+            GUI.Label(new Rect(x, y, w, 22f), "HAZIR SIRA", _section);
+            y += 26f;
+            var (axis, ascName, descName) = ChargeAxis();
+            float half = (w - 8f) * 0.5f;
+            if (Button(new Rect(x, y, half, 34f), ascName, _buttonCenter)) ApplyPreset(c => Vector3.Dot(c.LabelPosition, axis));
+            if (Button(new Rect(x + half + 8f, y, half, 34f), descName, _buttonCenter)) ApplyPreset(c => -Vector3.Dot(c.LabelPosition, axis));
+            y += 40f;
+            float mid = AxisCenter(axis);
+            if (Button(new Rect(x, y, half, 34f), "Ortadan dışa", _buttonCenter))
+                ApplyPreset(c => Mathf.Abs(Vector3.Dot(c.LabelPosition, axis) - mid));
+            if (Button(new Rect(x + half + 8f, y, half, 34f), "Dıştan ortaya", _buttonCenter))
+                ApplyPreset(c => -Mathf.Abs(Vector3.Dot(c.LabelPosition, axis) - mid));
+            y += 46f;
+
+            // Tek tempo: tüm patlamalar arası aynı süre
+            GUI.Label(new Rect(x, y, w, 22f), "TEMPO", _section);
+            float spacing = seq.Spacing;
+            GUI.Label(new Rect(x, y - 2f, w, 24f), spacing >= 0f ? $"{spacing:0.0} sn arayla" : "karışık", _value);
+            y += 26f;
+            float third = (w - 16f) / 3f;
+            for (int i = 0; i < Tempos.Length; i++)
+            {
+                bool on = Mathf.Abs(spacing - Tempos[i].delay) < 0.001f;
+                if (Button(new Rect(x + i * (third + 8f), y, third, 34f), Tempos[i].name, on ? _buttonCenterOn : _buttonCenter))
+                    seq.SetSpacing(Tempos[i].delay);
+            }
+            y += 44f;
+            DrawTimeline(new Rect(x, y, w, 34f));
+            y += 46f;
+
+            // Sıra listesi; sahnedeki numaralara tıklayarak da sıralanır
+            GUI.Label(new Rect(x, y, w, 22f), "SIRA", _section);
+            GUI.Label(new Rect(x, y - 2f, w, 24f), _pickIndex > 0 ? $"sıradaki: {_pickIndex + 1}." : "", _value);
+            y += 26f;
+            for (int i = 0; i < count; i++)
             {
                 var charge = seq.Order[i];
-                GUI.Label(new Rect(x, y + 4f, 120f, 30f), $"{i + 1}.  Sıra {charge.Label}", _label);
-                if (Button(new Rect(x + 125f, y, 34f, 32f), "↑", _buttonCenter)) seq.Move(i, -1);
-                if (Button(new Rect(x + 163f, y, 34f, 32f), "↓", _buttonCenter)) seq.Move(i, 1);
-                if (Button(new Rect(x + 215f, y, 34f, 32f), "–", _buttonCenter))
-                    charge.Delay = Mathf.Max(0f, charge.Delay - 0.2f);
-                GUI.Label(new Rect(x + 252f, y + 4f, 60f, 30f), $"{charge.Delay:0.0} sn", _label);
-                if (Button(new Rect(x + 315f, y, 34f, 32f), "+", _buttonCenter))
-                    charge.Delay = Mathf.Min(ExplosiveCharge.MaxDelay, charge.Delay + 0.2f);
-                y += 40f;
+                GUI.Label(new Rect(x, y + 2f, 30f, 30f), $"{i + 1}", i < _pickIndex ? _chipOn : _chip);
+                GUI.Label(new Rect(x + 40f, y + 4f, 150f, 28f), $"Sıra {charge.Label}", _label);
+                GUI.Label(new Rect(x + 150f, y + 7f, 90f, 24f), $"{seq.FireTimeOf(charge):0.0} sn", _small);
+                if (i > 0 && Button(new Rect(x + w - 74f, y, 34f, 32f), "↑", _buttonCenter)) seq.Move(i, -1);
+                if (i < count - 1 && Button(new Rect(x + w - 36f, y, 34f, 32f), "↓", _buttonCenter)) seq.Move(i, 1);
+                y += 38f;
             }
+            GUI.Label(new Rect(x, y, w, 40f), "İpucu: sahnedeki numaralara patlama sırasıyla tıkla.", _small);
+            y += 44f;
 
-            y += 10f;
-            if (Button(new Rect(x, y, w, 46f), "PATLAT   [Enter]", _big)) _gm.Detonate();
-            y += 52f;
-            if (Button(new Rect(x, y, w, 32f), "Katı sıfırla (ipler kalır)   [R]", _button)) _gm.QuickReset();
+            DrawPrediction(x, ref y, w);
+
+            if (Button(new Rect(x, y, w, 48f), "PATLAT   [Enter]", _big)) _gm.Detonate();
+            y += 54f;
+            if (Button(new Rect(x, y, w, 32f), "Katı sıfırla (ipler kalır)   [R]", _buttonCenter)) _gm.QuickReset();
+        }
+
+        private void ApplyPreset(System.Func<ExplosiveCharge, float> key)
+        {
+            _gm.Sequence.SortBy(key);
+            _pickIndex = 0;
+        }
+
+        /// <summary>
+        /// Şarj sıraları tek bir dünya ekseni (X ya da Z) boyunca dizilir. O ekseni ve kameraya göre iki yönün adını döndürür.
+        /// </summary>
+        private (Vector3 axis, string ascending, string descending) ChargeAxis()
+        {
+            var order = _gm.Sequence.Order;
+            float minX = float.MaxValue, maxX = float.MinValue, minZ = float.MaxValue, maxZ = float.MinValue;
+            foreach (var c in order)
+            {
+                if (c == null) continue;
+                var p = c.LabelPosition;
+                minX = Mathf.Min(minX, p.x);
+                maxX = Mathf.Max(maxX, p.x);
+                minZ = Mathf.Min(minZ, p.z);
+                maxZ = Mathf.Max(maxZ, p.z);
+            }
+            Vector3 axis = maxX - minX >= maxZ - minZ ? Vector3.right : Vector3.forward;
+            if (_cam == null) return (axis, "Baştan sona", "Sondan başa");
+
+            Vector3 right = Vector3.ProjectOnPlane(_cam.transform.right, Vector3.up).normalized;
+            Vector3 forward = Vector3.ProjectOnPlane(_cam.transform.forward, Vector3.up).normalized;
+            float sx = Vector3.Dot(axis, right), sf = Vector3.Dot(axis, forward);
+            if (Mathf.Abs(sx) >= Mathf.Abs(sf))
+                return sx > 0f ? (axis, "→  Soldan sağa", "←  Sağdan sola") : (axis, "←  Sağdan sola", "→  Soldan sağa");
+            return sf > 0f ? (axis, "↑  Önden arkaya", "↓  Arkadan öne") : (axis, "↓  Arkadan öne", "↑  Önden arkaya");
+        }
+
+        private float AxisCenter(Vector3 axis)
+        {
+            float min = float.MaxValue, max = float.MinValue;
+            foreach (var c in _gm.Sequence.Order)
+            {
+                if (c == null) continue;
+                float d = Vector3.Dot(c.LabelPosition, axis);
+                min = Mathf.Min(min, d);
+                max = Mathf.Max(max, d);
+            }
+            return min <= max ? (min + max) * 0.5f : 0f;
+        }
+
+        /// <summary>Zaman çizelgesi: her şarjın patlama anı, numarasıyla.</summary>
+        private void DrawTimeline(Rect rect)
+        {
+            var seq = _gm.Sequence;
+            int count = seq.Order.Count;
+            if (count == 0) return;
+            float total = Mathf.Max(0.01f, seq.FireTimeOf(seq.Order[count - 1]));
+            var line = new Rect(rect.x + 12f, rect.y + rect.height * 0.5f - 2f, rect.width - 24f, 4f);
+            DrawSwatch(line, new Color(1f, 1f, 1f, 0.15f));
+            for (int i = 0; i < count; i++)
+            {
+                float t = seq.FireTimeOf(seq.Order[i]) / total;
+                var r = new Rect(line.x + line.width * t - 13f, rect.y + rect.height * 0.5f - 13f, 26f, 26f);
+                GUI.Label(r, $"{i + 1}", _chipOn);
+            }
+            GUI.Label(new Rect(rect.x, rect.yMax - 2f, rect.width, 20f), $"toplam {total:0.0} sn", _value);
         }
 
         /// <summary>Planlamadaki tahmin özeti: kaç eşya düşer, kaç ip kopar, tahmini ceza ve sınır.</summary>
@@ -379,8 +483,8 @@ namespace KatKat
             switch (_gm.State)
             {
                 case GameState.Planning:
-                    text = "Sol tık: eşya → ankraj / eşya   •   Sağ tık: iptal / ipi sil   •   Sağ sürükle: döndür   •   " +
-                           $"Tekerlek: yakınlaş   •   Q/E: açı   •   F: odakla   •   1-{_gm.RopeTypes.Length}: ip tipi   •   F1: debug";
+                    text = "Sol tık: eşya → kanca / eşya   •   Sağ tık: iptal / ipi sil   •   Sağ sürükle: döndür   •   " +
+                           "Tekerlek: yakınlaş   •   Q/E: açı   •   F: odakla   •   F1: debug";
                     break;
                 case GameState.Detonating:
                 case GameState.Settling:
@@ -402,12 +506,27 @@ namespace KatKat
             if (_gm.State == GameState.Planning || _gm.State == GameState.Detonating)
             {
                 var order = _gm.Sequence.Order;
+                bool planning = _gm.State == GameState.Planning;
+                ExplosiveCharge clicked = null;
                 for (int i = 0; i < order.Count; i++)
                 {
                     if (order[i] == null || order[i].HasDetonated) continue;
                     if (!ToGui(order[i].LabelPosition, out var p)) continue;
-                    GUI.Box(new Rect(p.x - 22f, p.y - 16f, 44f, 32f), GUIContent.none, _box);
-                    GUI.Label(new Rect(p.x - 22f, p.y - 16f, 44f, 32f), $"{i + 1}", _tag);
+                    var r = new Rect(p.x - 20f, p.y - 20f, 40f, 40f);
+                    if (!planning)
+                    {
+                        GUI.Label(r, $"{i + 1}", _chipOn);
+                        continue;
+                    }
+                    // Tıklama ipe/eşyaya gitmesin
+                    UiRects.Add(r);
+                    if (Button(r, $"{i + 1}", i < _pickIndex ? _chipOn : _chip)) clicked = order[i];
+                }
+
+                if (clicked != null)
+                {
+                    _gm.Sequence.MoveTo(clicked, _pickIndex);
+                    _pickIndex = (_pickIndex + 1) % Mathf.Max(1, order.Count);
                 }
             }
 
@@ -613,6 +732,17 @@ namespace KatKat
                 new Color(0.45f, 0.38f, 0.15f, 1f), Accent, Accent, dark);
             _buttonOn.fontStyle = FontStyle.Bold;
             _buttonCenter = new GUIStyle(_button) { alignment = TextAnchor.MiddleCenter, padding = new RectOffset(0, 0, 2, 2) };
+            _buttonCenterOn = new GUIStyle(_buttonOn) { alignment = TextAnchor.MiddleCenter, padding = new RectOffset(0, 0, 2, 2) };
+            _section = new GUIStyle(_label) { fontSize = 14, fontStyle = FontStyle.Bold, normal = { textColor = new Color(Accent.r, Accent.g, Accent.b, 0.85f) } };
+            _value = new GUIStyle(_small) { alignment = TextAnchor.UpperRight, wordWrap = false };
+            _chip = ButtonStyle(font, 17, TextAnchor.MiddleCenter, new Color(0.17f, 0.19f, 0.25f, 0.95f),
+                new Color(0.3f, 0.33f, 0.42f, 0.98f), Accent, Color.white, dark);
+            _chip.padding = new RectOffset(0, 0, 0, 0);
+            _chip.fontStyle = FontStyle.Bold;
+            _chipOn = ButtonStyle(font, 17, TextAnchor.MiddleCenter, Accent, new Color(1f, 0.86f, 0.38f),
+                new Color(0.85f, 0.6f, 0.1f), dark, dark);
+            _chipOn.padding = new RectOffset(0, 0, 0, 0);
+            _chipOn.fontStyle = FontStyle.Bold;
             _big = ButtonStyle(font, 24, TextAnchor.MiddleCenter, Accent, new Color(1f, 0.86f, 0.38f),
                 new Color(0.85f, 0.6f, 0.1f), dark, dark);
             _big.fontStyle = FontStyle.Bold;

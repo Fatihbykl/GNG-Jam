@@ -62,10 +62,6 @@ namespace KatKat
 
             if (kb != null)
             {
-                for (int i = 0; i < _gm.RopeTypes.Length && i < 9; i++)
-                {
-                    if (kb[Key.Digit1 + i].wasPressedThisFrame) _gm.SelectRopeType(i);
-                }
                 if (kb.escapeKey.wasPressedThisFrame) Cancel();
             }
 

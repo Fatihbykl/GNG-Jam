@@ -433,10 +433,7 @@ MonoBehaviour:
     slowMoTint: {r: 0.86, g: 0.93, b: 1, a: 1}
     slowMoBlendSpeed: 6
   Content: {fileID: 11400000, guid: 1aee3aedfc646614ab6448570f1f4477, type: 2}
-  RopeTypes:
-  - {fileID: 11400000, guid: c700f8908011da64d8ace8342363f442, type: 2}
-  - {fileID: 11400000, guid: e5ed22f440ec3e94da57493f311b861f, type: 2}
-  - {fileID: 11400000, guid: 7db5e467913151043b3005a4049b43fe, type: 2}
+  Rope: {fileID: 0}
   ExplosionVfxPrefab: {fileID: 6937323551213689381, guid: b31b49c565ae9884f9d78b6cf93cb1d4, type: 3}
   RunSeed: 0
 --- !u!4 &1766565739
