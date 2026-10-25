@@ -13,10 +13,11 @@ MonoBehaviour:
   m_Name: Item_Lamba
   m_EditorClassIdentifier: 
   DisplayName: Lamba
-  Prefab: {fileID: 1308816770168562641, guid: 4a2fb8a5226fcb14dbf4192be4699dc8, type: 3}
+  Prefab: {fileID: 5100137452911069880, guid: e0aade11fab75a24c897068a02fcce22, type: 3}
   Size: 0
   Mass: 4
   CanBeTied: 1
+  Volatile: 0
   FootprintRadius: 0
   SpawnWeight: 1
   MinFloor: 0

@@ -81,6 +81,14 @@ namespace KatKat
         [Tooltip("Şarj bu yarıçaptaki kırılabilir parçaları anında parçalar.")]
         public float shatterBlastRadius = 1.2f;
         public float shardMinMass = 0.5f;
+        [Tooltip("Kolondan kopan tuğla bu bağıl hızın (m/s) üstündeki çarpmada kırık versiyonuna bölünür.")]
+        public float brickBreakSpeed = 5f;
+        [Tooltip("Şarja bu kadar yakın tuğlalar patlamada anında bölünür.")]
+        public float brickBreakBlastRadius = 0.45f;
+        [Tooltip("Bir katta en fazla bu kadar tuğla bölünür (fizik yükü).")]
+        public int maxBrokenBricks = 60;
+        [Tooltip("Bölünen tuğla parçasının en küçük kütlesi.")]
+        public float brickCellMinMass = 0.1f;
 
         [Header("İp")]
         public float ropeSlack = 1.05f;

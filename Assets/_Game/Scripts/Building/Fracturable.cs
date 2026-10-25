@@ -25,13 +25,37 @@ namespace KatKat
         private Floor _floor;
         private GameConfig _cfg;
         private readonly List<MeshFilter> _shards = new List<MeshFilter>();
+        /// <summary>Sağlam/kırık çifti olan modelde sağlam mesh'in renderer'ları; kırılınca gizlenir.</summary>
+        private readonly List<Renderer> _intact = new List<Renderer>();
+
+        /// <summary>
+        /// Modelde adı "Fractured" ile biten bir obje varsa (ör. Wall_Fractured) model sağlam/kırık çiftidir:
+        /// parçalar o objenin altındadır, geri kalan mesh'ler (ör. Wall_Intact) sağlam görünümdür.
+        /// </summary>
+        public static Transform FindFracturedSet(Transform root)
+        {
+            foreach (var t in root.GetComponentsInChildren<Transform>(true))
+            {
+                if (t != root && t.name.EndsWith("fractured", System.StringComparison.OrdinalIgnoreCase)) return t;
+            }
+            return null;
+        }
+
+        /// <summary>Sağlam/kırık çiftinde kırık parçaları gizler (kırılabilir olmayan taşıyıcı kolonlar da dahil).</summary>
+        public static void HideFracturedSet(GameObject go)
+        {
+            var set = FindFracturedSet(go.transform);
+            if (set == null) return;
+            foreach (var r in set.GetComponentsInChildren<Renderer>(true)) r.enabled = false;
+        }
 
         /// <summary>Modelde en az iki parça mesh varsa parçanın kırılabilir olmasını sağlar.</summary>
         /// <remarks>Ankraj ve şarj işareti gibi görsel alt objeler eklenmeden önce çağrılmalı; yoksa parça sanılırlar.</remarks>
         public static Fracturable TryAdd(StructuralPiece piece, Floor floor, GameConfig cfg, bool shatterOnImpact = true)
         {
+            var set = FindFracturedSet(piece.transform);
             var shards = new List<MeshFilter>();
-            foreach (var mf in piece.GetComponentsInChildren<MeshFilter>(true))
+            foreach (var mf in (set != null ? set : piece.transform).GetComponentsInChildren<MeshFilter>(true))
             {
                 if (mf.transform != piece.transform && mf.sharedMesh != null) shards.Add(mf);
             }
@@ -44,6 +68,14 @@ namespace KatKat
             f.ShatterOnImpact = shatterOnImpact;
             f._shards.Clear();
             f._shards.AddRange(shards);
+            f._intact.Clear();
+            if (set != null)
+            {
+                foreach (var r in piece.GetComponentsInChildren<Renderer>(true))
+                {
+                    if (!r.transform.IsChildOf(set)) f._intact.Add(r);
+                }
+            }
             if (floor.Content != null) ApplyInteriorMaterial(shards, floor.Content.FractureInteriorMaterial);
             return f;
         }
@@ -113,7 +145,17 @@ namespace KatKat
             float height = Mathf.Max(0.1f, _piece.SlotSize.y);
             float totalVolume = 0f;
             foreach (var mf in _shards) totalVolume += Volume(mf);
+            foreach (var r in _intact)
+            {
+                if (r != null) r.enabled = false;
+            }
+            foreach (var mf in _shards)
+            {
+                if (mf != null && mf.TryGetComponent<Renderer>(out var r)) r.enabled = true;
+            }
             SpawnDust();
+            // Sağlam/kırık çiftinin parçaları (ör. kolonun tuğlaları) kırık versiyonlarına bölünebilir.
+            bool breakable = _intact.Count > 0 && _floor.Content != null && _floor.Content.BrokenBrickPrefabs.Count > 0;
 
             foreach (var mf in _shards)
             {
@@ -152,6 +194,11 @@ namespace KatKat
 
                 Fragment.Mark(go, _piece);
                 _floor.Bodies.Add(rb);
+
+                if (!breakable) continue;
+                var breaker = ShardBreaker.Add(go, _floor, _cfg);
+                if (blastOrigin.HasValue && Vector3.Distance(center, blastOrigin.Value) <= _cfg.brickBreakBlastRadius)
+                    breaker.Break();
             }
         }
 

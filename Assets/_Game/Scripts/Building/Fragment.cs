@@ -13,5 +13,8 @@ namespace KatKat
         private void OnCollisionEnter(Collision collision) => AudioDirector.Impact(Sound.DebrisImpact, collision);
 
         public static void Mark(GameObject go, StructuralPiece source) => go.AddComponent<Fragment>().Group = source.GetInstanceID();
+
+        /// <summary>Parçanın da bölündüğü durumda (ör. kırılan tuğla) yeni parçaları aynı gruba katar.</summary>
+        public static void MarkGroup(GameObject go, int group) => go.AddComponent<Fragment>().Group = group;
     }
 }
