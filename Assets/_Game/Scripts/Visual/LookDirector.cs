@@ -19,6 +19,7 @@ namespace KatKat
         private VolumeProfile _profile;
         private Tonemapping _tonemapping;
         private ColorAdjustments _color;
+        private WhiteBalance _whiteBalance;
         private Bloom _bloom;
         private Vignette _vignette;
         private ChromaticAberration _chromatic;
@@ -33,9 +34,13 @@ namespace KatKat
             _gm = gm;
             _cam = cam;
             _baseFov = cam.fieldOfView;
-            cam.GetUniversalAdditionalCameraData().renderPostProcessing = true;
+            var camData = cam.GetUniversalAdditionalCameraData();
+            camData.renderPostProcessing = true;
+            // Yükseklik sisi sahne derinliğini okur
+            camData.requiresDepthTexture = true;
 
             BuildVolume();
+            gameObject.AddComponent<HeightFog>().Init(gm, cam);
 
             _sun = FindSun();
             _fill = new GameObject("FillLight").AddComponent<Light>();
@@ -67,6 +72,7 @@ namespace KatKat
             _profile.name = "KatKat_Post";
             _tonemapping = _profile.Add<Tonemapping>(true);
             _color = _profile.Add<ColorAdjustments>(true);
+            _whiteBalance = _profile.Add<WhiteBalance>(true);
             _bloom = _profile.Add<Bloom>(true);
             _vignette = _profile.Add<Vignette>(true);
             _chromatic = _profile.Add<ChromaticAberration>(true);
@@ -139,6 +145,8 @@ namespace KatKat
             _color.contrast.value = v.contrast;
             _color.saturation.value = Mathf.Lerp(v.saturation, v.slowMoSaturation, w);
             _color.colorFilter.value = Color.Lerp(Color.white, v.slowMoTint, w);
+            _whiteBalance.temperature.value = v.temperature;
+            _whiteBalance.tint.value = v.tint;
             _bloom.intensity.value = v.bloomIntensity;
             _bloom.threshold.value = v.bloomThreshold;
             _bloom.scatter.value = v.bloomScatter;

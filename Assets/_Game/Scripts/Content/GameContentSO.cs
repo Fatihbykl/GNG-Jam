@@ -37,6 +37,10 @@ namespace KatKat
         public GameObject CeilingPrefab;
         [Tooltip("Kolon patlayınca kalan moloz parçası. Yuvaya sığdırılır.")]
         public GameObject RubblePrefab;
+        [Tooltip("Tek tuğlanın Cell Fracture ile kırılmış versiyonları (ör. Brick_Broken_A/B/C, FBX'in kendisi).\n" +
+                 "Sağlam/kırık çifti olan modelin (Kolon: *_Intact + *_Fractured) parçaları sert çarpmada bunlardan biriyle\n" +
+                 "değişir; parçalar tuğlanın sınırlarına sığdırılır. Boşsa tuğlalar bölünmez.")]
+        public List<GameObject> BrokenBrickPrefabs = new List<GameObject>();
 
         [Header("Görsel işaretler (collider'ları otomatik silinir)")]
         [Tooltip("Kolon ankrajı. Yerel +Z kat merkezine bakar.")]

@@ -25,13 +25,38 @@ namespace KatKat
         private Floor _floor;
         private GameConfig _cfg;
         private readonly List<MeshFilter> _shards = new List<MeshFilter>();
+        /// <summary>Sağlam/kırık çifti olan modelde sağlam mesh'in renderer'ları; kırılınca gizlenir.</summary>
+        private readonly List<Renderer> _intact = new List<Renderer>();
+        private float _totalVolume = -1f;
+
+        /// <summary>
+        /// Modelde adı "Fractured" ile biten bir obje varsa (ör. Wall_Fractured) model sağlam/kırık çiftidir:
+        /// parçalar o objenin altındadır, geri kalan mesh'ler (ör. Wall_Intact) sağlam görünümdür.
+        /// </summary>
+        public static Transform FindFracturedSet(Transform root)
+        {
+            foreach (var t in root.GetComponentsInChildren<Transform>(true))
+            {
+                if (t != root && t.name.EndsWith("fractured", System.StringComparison.OrdinalIgnoreCase)) return t;
+            }
+            return null;
+        }
+
+        /// <summary>Sağlam/kırık çiftinde kırık parçaları gizler (kırılabilir olmayan taşıyıcı kolonlar da dahil).</summary>
+        public static void HideFracturedSet(GameObject go)
+        {
+            var set = FindFracturedSet(go.transform);
+            if (set == null) return;
+            foreach (var r in set.GetComponentsInChildren<Renderer>(true)) r.enabled = false;
+        }
 
         /// <summary>Modelde en az iki parça mesh varsa parçanın kırılabilir olmasını sağlar.</summary>
         /// <remarks>Ankraj ve şarj işareti gibi görsel alt objeler eklenmeden önce çağrılmalı; yoksa parça sanılırlar.</remarks>
         public static Fracturable TryAdd(StructuralPiece piece, Floor floor, GameConfig cfg, bool shatterOnImpact = true)
         {
+            var set = FindFracturedSet(piece.transform);
             var shards = new List<MeshFilter>();
-            foreach (var mf in piece.GetComponentsInChildren<MeshFilter>(true))
+            foreach (var mf in (set != null ? set : piece.transform).GetComponentsInChildren<MeshFilter>(true))
             {
                 if (mf.transform != piece.transform && mf.sharedMesh != null) shards.Add(mf);
             }
@@ -44,6 +69,14 @@ namespace KatKat
             f.ShatterOnImpact = shatterOnImpact;
             f._shards.Clear();
             f._shards.AddRange(shards);
+            f._intact.Clear();
+            if (set != null)
+            {
+                foreach (var r in piece.GetComponentsInChildren<Renderer>(true))
+                {
+                    if (!r.transform.IsChildOf(set)) f._intact.Add(r);
+                }
+            }
             if (floor.Content != null) ApplyInteriorMaterial(shards, floor.Content.FractureInteriorMaterial);
             return f;
         }
@@ -113,7 +146,9 @@ namespace KatKat
             float height = Mathf.Max(0.1f, _piece.SlotSize.y);
             float totalVolume = 0f;
             foreach (var mf in _shards) totalVolume += Volume(mf);
+            RevealShards();
             SpawnDust();
+            bool breakable = BreakableShards;
 
             foreach (var mf in _shards)
             {
@@ -152,7 +187,125 @@ namespace KatKat
 
                 Fragment.Mark(go, _piece);
                 _floor.Bodies.Add(rb);
+
+                if (!breakable) continue;
+                var breaker = ShardBreaker.Add(go, _floor, _cfg);
+                if (blastOrigin.HasValue && Vector3.Distance(center, blastOrigin.Value) <= _cfg.brickBreakBlastRadius)
+                    breaker.Break();
             }
+        }
+
+        /// <summary>Sağlam/kırık çiftinin parçaları (ör. kolonun tuğlaları) kırık versiyonlarına bölünebilir.</summary>
+        private bool BreakableShards => _intact.Count > 0 && _floor.Content != null && _floor.Content.BrokenBrickPrefabs.Count > 0;
+
+        /// <summary>Sağlam mesh'i gizleyip parçaları gösterir; ikisi aynı geometri olduğu için geçiş görünmez.</summary>
+        private void RevealShards()
+        {
+            foreach (var r in _intact)
+            {
+                if (r != null) r.enabled = false;
+            }
+            foreach (var mf in _shards)
+            {
+                if (mf != null && mf.TryGetComponent<Renderer>(out var r)) r.enabled = true;
+            }
+        }
+
+        /// <summary>
+        /// Kısmi dökülme (taşıyıcı kolon): <paramref name="cutY"/> üstündeki parçalar kopar, altındakiler parçada kalır.
+        /// <paramref name="ragged"/> kadar altındaki bantta parçalar yarı yarıya kopar, böylece tepe düz kesilmez.
+        /// Kopan parçalar katın altına taşınır (kök hareket etmeye devam ediyor) ve puanlamaya katılmaz: oyuncunun
+        /// elinde olmayan süs döküntüsüdür. Kök collider'ı kalan yüksekliğe indirilir ki kopanlar içinde sıkışmasın.
+        /// </summary>
+        /// <returns>Kopan parça sayısı.</returns>
+        public int ShedAbove(float cutY, float ragged, Vector3 kickOrigin, float kick)
+        {
+            if (IsShattered || _piece == null || _intact.Count == 0) return 0;
+
+            var body = _piece.Body;
+            if (_totalVolume < 0f)
+            {
+                _totalVolume = 0f;
+                foreach (var mf in _shards) _totalVolume += Volume(mf);
+            }
+
+            var shed = new List<MeshFilter>();
+            foreach (var mf in _shards)
+            {
+                if (mf == null) continue;
+                float y = mf.transform.TransformPoint(mf.sharedMesh.bounds.center).y;
+                if (y >= cutY || (y >= cutY - ragged && Random.value < 0.5f)) shed.Add(mf);
+            }
+            if (shed.Count == 0) return 0;
+
+            RevealShards();
+            bool breakable = BreakableShards;
+            Vector3 velocity = body.isKinematic ? Vector3.zero : body.linearVelocity;
+            Vector3 axis = _piece.WorldCenter;
+            var bounds = new Bounds();
+
+            for (int i = 0; i < shed.Count; i++)
+            {
+                var mf = shed[i];
+                _shards.Remove(mf);
+                var go = mf.gameObject;
+                Vector3 center = mf.transform.TransformPoint(mf.sharedMesh.bounds.center);
+                if (i == 0) bounds = new Bounds(center, Vector3.zero);
+                else bounds.Encapsulate(center);
+                go.transform.SetParent(_floor.transform, true);
+
+                if (go.GetComponent<Collider>() == null) go.AddComponent<MeshCollider>().sharedMesh = mf.sharedMesh;
+                foreach (var col in go.GetComponents<Collider>())
+                {
+                    if (col is MeshCollider mc && !mc.convex) mc.convex = true;
+                    col.enabled = true;
+                }
+
+                float share = _totalVolume > 1e-6f ? Volume(mf) / _totalVolume : 0.03f;
+                var rb = PrefabPlacement.EnsureBody(go, Mathf.Max(_cfg.shardMinMass, body.mass * share), continuous: false);
+                rb.isKinematic = false;
+                // Kolonun ekseninden dışa ve patlamadan uzağa, hafif yukarı: tuğlalar kenardan dökülür
+                Vector3 outward = center - axis;
+                outward.y = 0f;
+                Vector3 away = center - kickOrigin;
+                away.y = 0f;
+                Vector3 dir = (outward.normalized + away.normalized).normalized + Vector3.up * 0.3f;
+                rb.linearVelocity = velocity + dir * (kick * Random.Range(0.5f, 1f));
+                rb.angularVelocity = Random.insideUnitSphere * AngularKick;
+                Fragment.Mark(go, _piece);
+                if (breakable) ShardBreaker.Add(go, _floor, _cfg);
+            }
+
+            ShrinkCollider();
+            bounds.Expand(0.3f);
+            Vfx.Shatter(bounds);
+            AudioDirector.Play(Sound.ConcreteBreak, bounds.center);
+            return shed.Count;
+        }
+
+        /// <summary>Kök kutu collider'ının tepesini kalan parçaların tepesine indirir.</summary>
+        private void ShrinkCollider()
+        {
+            if (!TryGetComponent<BoxCollider>(out var box)) return;
+            float top = float.NegativeInfinity;
+            Matrix4x4 toLocal = transform.worldToLocalMatrix;
+            foreach (var mf in _shards)
+            {
+                if (mf == null) continue;
+                Matrix4x4 m = toLocal * mf.transform.localToWorldMatrix;
+                Bounds b = mf.sharedMesh.bounds;
+                for (int i = 0; i < 8; i++)
+                {
+                    var corner = b.center + Vector3.Scale(b.extents,
+                        new Vector3((i & 1) == 0 ? -1f : 1f, (i & 2) == 0 ? -1f : 1f, (i & 4) == 0 ? -1f : 1f));
+                    top = Mathf.Max(top, m.MultiplyPoint3x4(corner).y);
+                }
+            }
+            float bottom = box.center.y - box.size.y * 0.5f;
+            if (float.IsNegativeInfinity(top) || top <= bottom) return;
+            top = Mathf.Min(top, box.center.y + box.size.y * 0.5f);
+            box.center = new Vector3(box.center.x, (bottom + top) * 0.5f, box.center.z);
+            box.size = new Vector3(box.size.x, top - bottom, box.size.z);
         }
 
         private void SpawnDust()

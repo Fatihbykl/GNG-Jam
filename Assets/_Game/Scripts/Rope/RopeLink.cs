@@ -222,7 +222,8 @@ namespace KatKat
         /// Kolon patlarken çağrılır: o kolondaki ankraja bağlı ucu çözer (GDD: "kolon giderse ipi de boşa çıkar").
         /// Böylece ip kolonla birlikte eşyayı dışarı sürüklemez.
         /// </summary>
-        public bool ReleaseFromColumn(StructuralPiece column)
+        /// <param name="label">İpi boşa çıkaran neden; boşsa kolonun şarj sırası.</param>
+        public bool ReleaseFromColumn(StructuralPiece column, string label = null)
         {
             if (!IsHolding || _rope == null || column == null) return false;
 
@@ -234,7 +235,7 @@ namespace KatKat
             _rope.UnpinParticle(index);
             IsReleased = true;
             CurrentForce = 0f;
-            string label = column.Charge != null ? column.Charge.Label : "?";
+            if (label == null) label = column.Charge != null ? column.Charge.Label : "?";
             if (A.Item != null)
             {
                 A.Item.RemoveTie();

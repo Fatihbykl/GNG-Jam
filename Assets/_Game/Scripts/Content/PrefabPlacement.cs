@@ -60,6 +60,7 @@ namespace KatKat
             var go = Object.Instantiate(prefab, parent);
             go.name = name;
             var t = go.transform;
+            Fracturable.HideFracturedSet(go);
             Bounds b = MeasureLocal(t);
             EnsureCollider(go, b, null);
 
@@ -148,7 +149,7 @@ namespace KatKat
             return false;
         }
 
-        private static Vector3 SafeDivide(Vector3 a, Vector3 b)
+        public static Vector3 SafeDivide(Vector3 a, Vector3 b)
         {
             return new Vector3(
                 Mathf.Abs(b.x) > 1e-4f ? a.x / b.x : 1f,

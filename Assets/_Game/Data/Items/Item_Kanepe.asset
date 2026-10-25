@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4ac4e6706c87854086e529e148e2ee2, type: 3}
+  m_Name: Item_Kanepe
+  m_EditorClassIdentifier: 
+  DisplayName: Kanepe
+  Prefab: {fileID: 1425281715387340590, guid: 11b44832d34e5bd4fa20d2191b5d72ab, type: 3}
+  Size: 1
+  Mass: 60
+  CanBeTied: 1
+  Volatile: 0
+  FootprintRadius: 0
+  SpawnWeight: 0.7
+  MinFloor: 0
+  LoosePartBreakForce: 120
+  LoosePartBreakTorque: 60
+  LoosePartMass: 1.5
+  FallbackSize: {x: 0.5, y: 0.5, z: 0.5}
+  FallbackColor: {r: 1, g: 1, b: 1, a: 1}
+  FallbackLooseParts: 0

@@ -12,16 +12,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 152380c062543b746ba6ab69a01daeb3, type: 3}
   m_Name: GameContent
   m_EditorClassIdentifier: 
-  ColumnPrefab: {fileID: 8523072223473190041, guid: 628e71ca9bc0cf5478b5c2e2cf8bbef5, type: 3}
-  BearingColumnPrefab: {fileID: 8730785699733014958, guid: 4909dbe8445413843b4940ed6971098d, type: 3}
+  ColumnPrefab: {fileID: 1392904898586549298, guid: 00d8542017939244d9e23138af195e60, type: 3}
+  BearingColumnPrefab: {fileID: 0}
   WallPrefab: {fileID: 9218598344423901948, guid: 30bbdc979949d6c4f81d8c2c161bc45b, type: 3}
+  WallPrefabWeight: 2
+  WallVariants:
+  - Prefab: {fileID: 7728635323272400690, guid: 6dd352eedf423944f86b02450f530f41, type: 3}
+    Weight: 1
   CeilingPrefab: {fileID: 8970670169747496822, guid: 3aecbb7a0ad1308488d7e3d790d39efb, type: 3}
   RubblePrefab: {fileID: 7808480193478641594, guid: 9beee7fdc091f5f4489af07695acb6da, type: 3}
+  BrokenBrickPrefabs:
+  - {fileID: 919132149155446097, guid: a8e7a0a9cc00608418feecce133a341c, type: 3}
+  - {fileID: 919132149155446097, guid: b8fe6128a5f10f84daf86b8b91fbf45d, type: 3}
+  - {fileID: 919132149155446097, guid: fdf06a71bba074741b6b5cb74afd21cc, type: 3}
   ColumnAnchorPrefab: {fileID: 8479085579402387634, guid: 3ec0d151a476781419f67e6dd914d6c9, type: 3}
   FloorRingPrefab: {fileID: 5452616181484888971, guid: d621858b170f37d478b547e553177cd4, type: 3}
   ChargeMarkerPrefab: {fileID: 2411810382320939322, guid: 04f4b88b9a615b043968f091a340abe4, type: 3}
   FadeMaterial: {fileID: 2100000, guid: 995a1bf52717478cb6cbc54699f368b5, type: 2}
   ParticleMaterial: {fileID: 2100000, guid: a32ee54b39aa485fba5f8050cc9c9e44, type: 2}
+  FractureInteriorMaterial: {fileID: 2100000, guid: 698b910fc82be47478ab5914d3d8ee3f, type: 2}
   UiFont: {fileID: 0}
   Sounds: {fileID: 11400000, guid: 872c0956a45b45e6bbdc011b3880704e, type: 2}
   FitStructureToSlot: 1
@@ -31,3 +40,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: dd5a70d7cd8bf344db10772473003e24, type: 2}
   - {fileID: 11400000, guid: 5f2b4153f58ebb44bb048d58cfd069b8, type: 2}
   - {fileID: 11400000, guid: 544e2ed516bf4e4eaaabcdd2048cfde6, type: 2}
+  - {fileID: 11400000, guid: 79412f2ecff9d584b9fddeb3d5a4ab18, type: 2}
+  - {fileID: 11400000, guid: de19bd36a269af44bb7638fa6f9a5239, type: 2}
+  - {fileID: 11400000, guid: 62f084055a3904a46aaa38de9dd14a69, type: 2}
+  - {fileID: 11400000, guid: d71b7e9849b6c1542bd308c59a0943f2, type: 2}
+  - {fileID: 11400000, guid: 6b7c8b3eb00b64340930d045c40794e8, type: 2}
+  - {fileID: 11400000, guid: 4891f03f29e2c5049862dbcd683558d5, type: 2}

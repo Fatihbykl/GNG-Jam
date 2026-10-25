@@ -30,6 +30,8 @@ namespace KatKat
         public readonly List<ExplosiveCharge> Charges = new List<ExplosiveCharge>();
 
         public bool IsSimulated { get; private set; }
+        /// <summary>Bu katta kırık versiyonuna bölünen tuğla sayısı (bkz. <see cref="ShardBreaker"/>).</summary>
+        public int BrokenShards { get; set; }
 
         private MaterialPropertyBlock _block;
 

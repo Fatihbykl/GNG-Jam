@@ -12,45 +12,59 @@ namespace KatKat
     public class VisualConfig
     {
         [Header("Güneş")]
-        public Color sunColor = new Color(1f, 0.91f, 0.78f);
-        public float sunIntensity = 1.7f;
-        [Range(10f, 90f)] public float sunPitch = 38f;
+        public Color sunColor = new Color(1f, 0.93f, 0.82f);
+        public float sunIntensity = 2.3f;
+        [Range(10f, 90f)] public float sunPitch = 44f;
         public float sunYaw = -35f;
-        [Range(0f, 1f)] public float shadowStrength = 0.8f;
+        [Range(0f, 1f)] public float shadowStrength = 0.7f;
 
         [Header("Dolgu ışığı (kamerayla döner, gölgesiz)")]
-        public Color fillColor = new Color(0.62f, 0.72f, 1f);
-        public float fillIntensity = 0.35f;
+        public Color fillColor = new Color(0.6f, 0.72f, 1f);
+        public float fillIntensity = 0.5f;
         [Range(0f, 60f)] public float fillPitch = 20f;
 
         [Header("Ortam ışığı (gradient)")]
-        public Color ambientSky = new Color(0.58f, 0.68f, 0.86f);
-        public Color ambientEquator = new Color(0.72f, 0.66f, 0.6f);
-        public Color ambientGround = new Color(0.26f, 0.25f, 0.28f);
+        public Color ambientSky = new Color(0.7f, 0.8f, 0.98f);
+        public Color ambientEquator = new Color(0.86f, 0.78f, 0.7f);
+        public Color ambientGround = new Color(0.4f, 0.37f, 0.38f);
 
         [Header("Gökyüzü (procedural)")]
-        public Color skyTint = new Color(0.45f, 0.62f, 0.9f);
+        public Color skyTint = new Color(0.4f, 0.6f, 0.95f);
         public Color skyGround = new Color(0.36f, 0.38f, 0.44f);
-        [Range(0f, 5f)] public float atmosphereThickness = 0.8f;
-        [Range(0f, 8f)] public float skyExposure = 1.25f;
+        [Range(0f, 5f)] public float atmosphereThickness = 0.9f;
+        [Range(0f, 8f)] public float skyExposure = 1.4f;
         [Tooltip("Gökyüzü yoksa (materyal bulunamazsa) kullanılan düz renk.")]
         public Color fallbackBackground = new Color(0.62f, 0.8f, 0.95f);
 
         [Header("Sis (aşağıdaki katlar kaybolur)")]
         public bool fog = true;
-        public Color fogColor = new Color(0.66f, 0.74f, 0.86f);
-        public float fogStart = 30f;
-        public float fogEnd = 120f;
+        public Color fogColor = new Color(0.74f, 0.82f, 0.94f);
+        public float fogStart = 35f;
+        public float fogEnd = 130f;
+
+        [Header("Yükseklik sisi (binanın altı)")]
+        public bool heightFog = true;
+        public Color heightFogColor = new Color(0.8f, 0.86f, 0.95f);
+        [Tooltip("Sisin üst yüzeyi aktif katın tabanından kaç metre aşağıda.")]
+        public float heightFogOffset = 3.5f;
+        [Tooltip("Yüzeyin altında metre başına yoğunluk; büyüdükçe kule daha çabuk kaybolur.")]
+        public float heightFogDensity = 0.22f;
+        [Range(0f, 1f)] public float heightFogNoise = 0.35f;
+        public float heightFogNoiseScale = 0.06f;
+        public float heightFogNoiseSpeed = 0.35f;
 
         [Header("Post-processing")]
-        public TonemappingMode tonemapping = TonemappingMode.Neutral;
-        public float postExposure = 0.15f;
-        [Range(-100f, 100f)] public float contrast = 12f;
-        [Range(-100f, 100f)] public float saturation = 10f;
-        public float bloomIntensity = 0.6f;
-        public float bloomThreshold = 0.95f;
-        [Range(0f, 1f)] public float bloomScatter = 0.65f;
-        [Range(0f, 1f)] public float vignette = 0.22f;
+        public TonemappingMode tonemapping = TonemappingMode.ACES;
+        public float postExposure = 0.7f;
+        [Range(-100f, 100f)] public float contrast = 6f;
+        [Range(-100f, 100f)] public float saturation = 22f;
+        public float bloomIntensity = 0.45f;
+        public float bloomThreshold = 1.1f;
+        [Range(0f, 1f)] public float bloomScatter = 0.6f;
+        [Range(0f, 1f)] public float vignette = 0.24f;
+        [Tooltip("Beyaz dengesi: + sıcak (sarı), − soğuk (mavi).")]
+        [Range(-100f, 100f)] public float temperature = 8f;
+        [Range(-100f, 100f)] public float tint = 2f;
 
         [Header("Patlama hissi")]
         [Tooltip("Açık: kodla kurulan patlama efekti. Kapalı: GameManager.ExplosionVfxPrefab kullanılır.")]

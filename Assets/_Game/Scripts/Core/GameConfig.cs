@@ -35,6 +35,22 @@ namespace KatKat
         public float bearingBaseJointScale = 4f;
         [Tooltip("Tavanın taşıyıcı kolona bağlantısı zayıf: çevre çökünce tavan kolondan kopar, kolon ayakta kalır.")]
         public float bearingTopJointScale = 0.3f;
+        [Tooltip("Bu uzaklıktaki (m, yatay) şarj patlayınca taşıyıcı kolon tepesinden tuğla döker.")]
+        public float bearingShedBlastRadius = 4.5f;
+        [Tooltip("En yakın patlamanın ya da bir çarpmanın tepeden dökebileceği en fazla yükseklik (m).")]
+        public float bearingShedDepth = 0.9f;
+        [Tooltip("Kesimin altındaki bu bantta (m) tuğlalar yarı yarıya düşer; tepe düz kesilmez.")]
+        public float bearingShedRagged = 0.3f;
+        [Tooltip("Moloz bu bağıl hızın (m/s) üstünde çarparsa taşıyıcı kolondan tuğla döker.")]
+        public float bearingShedSpeed = 3.5f;
+        [Tooltip("Tepeye yakın bir çarpmanın en az dökeceği yükseklik (m).")]
+        public float bearingShedPerHit = 0.35f;
+        [Tooltip("Dökülme ankrajın bu kadar (m) üstünde durur; ip hep tutunur.")]
+        public float bearingKeepAboveAnchor = 0.35f;
+        [Tooltip("Dökülen tuğlaların dışa savrulma hızı (m/s).")]
+        public float bearingShedKick = 1.2f;
+        [Tooltip("Tabanı kopan taşıyıcı kolon bu açıdan (derece) fazla yatarsa tuğlalarına dağılır, ipi boşa çıkar.")]
+        public float bearingToppleAngle = 25f;
 
         [Header("Kesici şarj")]
         [Tooltip("Hız değişimi (m/s), kütleden bağımsız. Şarj kolonu keser; çöküşü yerçekimi ve sıra belirler.")]
@@ -81,6 +97,14 @@ namespace KatKat
         [Tooltip("Şarj bu yarıçaptaki kırılabilir parçaları anında parçalar.")]
         public float shatterBlastRadius = 1.2f;
         public float shardMinMass = 0.5f;
+        [Tooltip("Kolondan kopan tuğla bu bağıl hızın (m/s) üstündeki çarpmada kırık versiyonuna bölünür.")]
+        public float brickBreakSpeed = 5f;
+        [Tooltip("Şarja bu kadar yakın tuğlalar patlamada anında bölünür.")]
+        public float brickBreakBlastRadius = 0.45f;
+        [Tooltip("Bir katta en fazla bu kadar tuğla bölünür (fizik yükü).")]
+        public int maxBrokenBricks = 60;
+        [Tooltip("Bölünen tuğla parçasının en küçük kütlesi.")]
+        public float brickCellMinMass = 0.1f;
 
         [Header("İp")]
         public float ropeSlack = 1.05f;
@@ -96,10 +120,10 @@ namespace KatKat
         public int startLives = 3;
         public int slowMoCharges = 2;
         public float safeZoneMargin = 1.5f;
-        [Tooltip("Kat cezası bu sınırı aşarsa bir can daha gider.")]
-        public int penaltyLimit = 15;
-        public float penaltyLimitDecreasePerFloor = 0.4f;
-        public int minPenaltyLimit = 8;
+        [Tooltip("Kat cezası sınırı: kattaki küçük eşyaların bu oranı düşerse sınıra ulaşılır; aşılırsa bir can daha gider.")]
+        [Range(0f, 1f)] public float penaltyLimitItemRatio = 0.5f;
+        public float penaltyLimitRatioDecreasePerFloor = 0.03f;
+        [Range(0f, 1f)] public float minPenaltyLimitItemRatio = 0.25f;
 
         [Header("Ağır çekim")]
         public float slowMoScale = 0.15f;

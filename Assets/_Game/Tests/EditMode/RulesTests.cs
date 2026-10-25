@@ -349,5 +349,15 @@ namespace KatKat.Tests
             Assert.GreaterOrEqual(FloorDifficulty.For(100, cfg).BearingRatio, cfg.minBearingRatio);
             Assert.GreaterOrEqual(FloorDifficulty.For(100, cfg).BaseBudget, cfg.minBudget);
         }
+
+        [Test]
+        public void PenaltyLimit_Scales_With_Small_Items()
+        {
+            var cfg = new GameConfig();
+            Assert.Greater(FloorScorer.PenaltyLimitFor(8, 0, cfg), FloorScorer.PenaltyLimitFor(2, 0, cfg));
+            Assert.LessOrEqual(FloorScorer.PenaltyLimitFor(8, 10, cfg), FloorScorer.PenaltyLimitFor(8, 0, cfg));
+            // Hiç küçük eşya yoksa bile en az bir küçük eşyalık pay kalır
+            Assert.AreEqual(FloorScorer.SmallItemPenalty, FloorScorer.PenaltyLimitFor(0, 0, cfg));
+        }
     }
 }

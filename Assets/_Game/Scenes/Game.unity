@@ -328,6 +328,14 @@ MonoBehaviour:
     minBearingRatio: 0.15
     bearingBaseJointScale: 4
     bearingTopJointScale: 0.3
+    bearingShedBlastRadius: 4.5
+    bearingShedDepth: 0.9
+    bearingShedRagged: 0.3
+    bearingShedSpeed: 3.5
+    bearingShedPerHit: 0.35
+    bearingKeepAboveAnchor: 0.35
+    bearingShedKick: 1.2
+    bearingToppleAngle: 25
     explosionKick: 1.2
     explosionRadius: 3.5
     explosionUpward: 0.3
@@ -335,16 +343,23 @@ MonoBehaviour:
     pushAccelSmall: 15
     pushAccelBig: 18
     pushAccelPerFloor: 0.4
-    pushDuration: 0.4
+    pushDuration: 0.8
     waveRadius: 4.5
     pushRadialBelow: 0.08
     pushDirectionalAbove: 0.4
-    itemFriction: 0.4
+    itemFriction: 0.248
+    gasFuse: 0.7
+    gasBlastRadius: 3.5
+    gasBlastStrength: 1.6
     wallOutwardDot: 0.3
     wallFallKick: 2.2
     shatterImpactSpeed: 4
     shatterBlastRadius: 1.2
     shardMinMass: 0.5
+    brickBreakSpeed: 5
+    brickBreakBlastRadius: 0.45
+    maxBrokenBricks: 60
+    brickCellMinMass: 0.1
     ropeSlack: 1.05
     maxRopeLength: 9
     ropeBreakWarmup: 0.4
@@ -370,34 +385,36 @@ MonoBehaviour:
     settleTimeout: 10
     killDepth: 15
   Visuals:
-    sunColor: {r: 1, g: 0.91, b: 0.78, a: 1}
-    sunIntensity: 1.7
-    sunPitch: 38
+    sunColor: {r: 1, g: 0.93, b: 0.82, a: 1}
+    sunIntensity: 2.3
+    sunPitch: 44
     sunYaw: -35
-    shadowStrength: 0.8
-    fillColor: {r: 0.62, g: 0.72, b: 1, a: 1}
-    fillIntensity: 0.35
+    shadowStrength: 0.7
+    fillColor: {r: 0.6, g: 0.72, b: 1, a: 1}
+    fillIntensity: 0.5
     fillPitch: 20
-    ambientSky: {r: 0.58, g: 0.68, b: 0.86, a: 1}
-    ambientEquator: {r: 0.72, g: 0.66, b: 0.6, a: 1}
-    ambientGround: {r: 0.26, g: 0.25, b: 0.28, a: 1}
-    skyTint: {r: 0.45, g: 0.62, b: 0.9, a: 1}
+    ambientSky: {r: 0.7, g: 0.8, b: 0.98, a: 1}
+    ambientEquator: {r: 0.86, g: 0.78, b: 0.7, a: 1}
+    ambientGround: {r: 0.4, g: 0.37, b: 0.38, a: 1}
+    skyTint: {r: 0.4, g: 0.6, b: 0.95, a: 1}
     skyGround: {r: 0.36, g: 0.38, b: 0.44, a: 1}
-    atmosphereThickness: 0.8
-    skyExposure: 1.25
+    atmosphereThickness: 0.9
+    skyExposure: 1.4
     fallbackBackground: {r: 0.62, g: 0.8, b: 0.95, a: 1}
     fog: 1
-    fogColor: {r: 0.66, g: 0.74, b: 0.86, a: 1}
-    fogStart: 30
-    fogEnd: 120
-    tonemapping: 1
-    postExposure: 0.15
-    contrast: 12
-    saturation: 10
-    bloomIntensity: 0.6
-    bloomThreshold: 0.95
-    bloomScatter: 0.65
-    vignette: 0.22
+    fogColor: {r: 0.74, g: 0.82, b: 0.94, a: 1}
+    fogStart: 35
+    fogEnd: 130
+    tonemapping: 2
+    postExposure: 0.7
+    contrast: 6
+    saturation: 22
+    bloomIntensity: 0.45
+    bloomThreshold: 1.1
+    bloomScatter: 0.6
+    vignette: 0.24
+    temperature: 8
+    tint: 2
     useCustomBlastFx: 1
     hitStopDuration: 0.06
     hitStopScale: 0.05
@@ -550,6 +567,55 @@ MonoBehaviour:
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
   m_SoftShadowQuality: 0
+--- !u!1 &1988825975
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1988825977}
+  - component: {fileID: 1988825976}
+  m_Layer: 0
+  m_Name: Global Volume
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1988825976
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1988825975}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IsGlobal: 1
+  priority: 0
+  blendDistance: 0
+  weight: 1
+  sharedProfile: {fileID: 11400000, guid: 5653fc603820ea94785517003b312afc, type: 2}
+--- !u!4 &1988825977
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1988825975}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -1.4709051, y: 2.684038, z: -3.4075093}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -557,3 +623,4 @@ SceneRoots:
   - {fileID: 1278367793}
   - {fileID: 1894091305}
   - {fileID: 1766565739}
+  - {fileID: 1988825977}

@@ -225,7 +225,7 @@ namespace KatKat
             GUI.color = old;
             y += 28f;
             GUI.Label(new Rect(x, y, w, 24f),
-                $"{impact.Snaps} ip kopar  •  {impact.OutwardWalls} duvar dışa  •  ceza ~{impact.EstimatedPenalty} / sınır {limit}",
+                $"{impact.Snaps} ip kopar  •  ceza ~{impact.EstimatedPenalty} / sınır {limit}",
                 _small);
             y += 26f;
             GUI.Label(new Rect(x, y, w, 40f), "Oklar yaklaşık: yeşil kalır, sarı kayar, kırmızı düşer.", _small);
@@ -272,8 +272,6 @@ namespace KatKat
             int row = 0;
             ResultRow(ref y, x, w, t, row++, "Kurtarılan eşya", r.SavedItems, $" / {r.TotalItems}",
                 r.SavedItems == r.TotalItems ? Good : Warn, false);
-            ResultRow(ref y, x, w, t, row++, $"Bölge dışı parça  (×{FloorScorer.PiecePenalty})", r.OutPieces, "",
-                r.OutPieces == 0 ? Good : Warn, false);
             ResultRow(ref y, x, w, t, row++, $"Bölge dışı küçük eşya  (×{FloorScorer.SmallItemPenalty})", r.OutSmallItems, "",
                 r.OutSmallItems == 0 ? Good : Warn, false);
             ResultRow(ref y, x, w, t, row++, $"Komşu binaya çarpan  (×{FloorScorer.NeighborPenalty})", r.NeighborHits, "",
@@ -431,7 +429,10 @@ namespace KatKat
             if (_gm.State == GameState.Planning)
             {
                 var collapse = _gm.Collapse;
-                string text = collapse.HasDirection ? "Tahmini çöküş yönü" : "Tahmini çöküş: merkeze";
+                string text = !collapse.HasDirection ? "Tahmini çöküş: merkeze"
+                    : collapse.Strength > 0.5f ? "Tahmini çöküş yönü (güçlü)"
+                    : collapse.Strength > 0.25f ? "Tahmini çöküş yönü (orta)"
+                    : "Tahmini çöküş yönü (hafif)";
                 if (ToGui(collapse.HasDirection ? collapse.Tip : collapse.Center, out var p))
                 {
                     var size = _small.CalcSize(new GUIContent(text));
