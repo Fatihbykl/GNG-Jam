@@ -21,7 +21,11 @@ namespace KatKat
         ResultsTick,
         LifeLost,
         FloorStart,
-        GameOver
+        GameOver,
+        RopePick,
+        Fuse,
+        Extinguish,
+        Error
     }
 
     /// <summary>Tek bir oyun olayının sesi. Birden çok klip verilirse her çalışta rastgele biri seçilir.</summary>
@@ -71,8 +75,14 @@ namespace KatKat
         public SoundEvent ItemImpact = new SoundEvent(0.6f, 0.12f, 0.08f);
         [Tooltip("PATLAT'a basıldığında (ör. fitil, alarm).")]
         public SoundEvent Detonate = new SoundEvent(0.8f, 0f, 0.2f);
+        [Tooltip("Gaz tüpünün fitili tutuşunca.")]
+        public SoundEvent Fuse = new SoundEvent(0.7f, 0.05f, 0.3f);
+        [Tooltip("İp atılıp fitil sönünce.")]
+        public SoundEvent Extinguish = new SoundEvent(0.7f, 0.05f, 0.3f);
 
         [Header("İpler")]
+        [Tooltip("İpin ilk ucu bir eşyaya tutturulunca.")]
+        public SoundEvent RopePick = new SoundEvent(0.5f, 0.08f, 0.05f);
         public SoundEvent RopePlace = new SoundEvent(0.7f, 0.08f, 0.05f);
         public SoundEvent RopeRemove = new SoundEvent(0.6f, 0.08f, 0.05f);
         public SoundEvent RopeSnap = new SoundEvent(0.9f, 0.1f, 0.05f);
@@ -91,6 +101,8 @@ namespace KatKat
         [Tooltip("Eşya güvenli bölgeden çıktığında.")]
         public SoundEvent ZoneWarning = new SoundEvent(0.7f, 0.04f, 0.3f);
         public SoundEvent UiClick = new SoundEvent(0.5f, 0.05f, 0.03f);
+        [Tooltip("Geçersiz işlem (ör. ip çok uzun, bütçe yetmiyor).")]
+        public SoundEvent Error = new SoundEvent(0.4f, 0f, 0.2f);
         [Tooltip("Sonuç ekranında her satır gelirken.")]
         public SoundEvent ResultsTick = new SoundEvent(0.5f, 0.03f, 0.05f);
         public SoundEvent LifeLost = new SoundEvent(0.9f, 0f, 0.3f);
@@ -126,6 +138,10 @@ namespace KatKat
                 case Sound.LifeLost: return LifeLost;
                 case Sound.FloorStart: return FloorStart;
                 case Sound.GameOver: return GameOver;
+                case Sound.RopePick: return RopePick;
+                case Sound.Fuse: return Fuse;
+                case Sound.Extinguish: return Extinguish;
+                case Sound.Error: return Error;
                 default: return null;
             }
         }

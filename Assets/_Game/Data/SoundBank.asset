@@ -12,3 +12,145 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d95010d374796ee4c8f07d489c58433d, type: 3}
   m_Name: SoundBank
   m_EditorClassIdentifier: 
+  MasterVolume: 0.9
+  Explosion:
+    Clips:
+    - {fileID: 8300000, guid: e21a9970724d5ff4a192e62c75043041, type: 3}
+    - {fileID: 8300000, guid: 96b239ca3d695ddba7a551b28608e1a4, type: 3}
+    Volume: 1.0
+    PitchJitter: 0.1
+    Cooldown: 0.05
+  ConcreteBreak:
+    Clips:
+    - {fileID: 8300000, guid: d0ff3d0bc40057dfbad0a2040eb8db89, type: 3}
+    - {fileID: 8300000, guid: 78892d9211cb5c4e937da8804d0926b9, type: 3}
+    - {fileID: 8300000, guid: 86535fa4defe5aa8ba5ce1f18f327ac3, type: 3}
+    Volume: 0.7
+    PitchJitter: 0.12
+    Cooldown: 0.08
+  DebrisImpact:
+    Clips:
+    - {fileID: 8300000, guid: c4f1739c4ff45a14a651dd092d922f49, type: 3}
+    - {fileID: 8300000, guid: 54431d9889e25a42a77c58189ad9ea83, type: 3}
+    - {fileID: 8300000, guid: c0f08908bfcf597aba5bae887eb162d7, type: 3}
+    Volume: 0.45
+    PitchJitter: 0.15
+    Cooldown: 0.06
+  ItemImpact:
+    Clips:
+    - {fileID: 8300000, guid: 0a4b8cf2ffde5ccabe5f49c42818d7b9, type: 3}
+    - {fileID: 8300000, guid: de38b305bcf55384bbc20166904eb03c, type: 3}
+    - {fileID: 8300000, guid: e0003314f1d25c9388633887e423853d, type: 3}
+    Volume: 0.55
+    PitchJitter: 0.12
+    Cooldown: 0.08
+  Detonate:
+    Clips:
+    - {fileID: 8300000, guid: 2813e73d87615768ba7b605bbef43c85, type: 3}
+    Volume: 0.7
+    PitchJitter: 0
+    Cooldown: 0.2
+  Fuse:
+    Clips:
+    - {fileID: 8300000, guid: fb7b239524ea59828d305fe04b03cab0, type: 3}
+    Volume: 0.6
+    PitchJitter: 0.05
+    Cooldown: 0.3
+  Extinguish:
+    Clips:
+    - {fileID: 8300000, guid: 1b9c516fc28a501e96c4cf5a2004c9cc, type: 3}
+    Volume: 0.7
+    PitchJitter: 0.05
+    Cooldown: 0.3
+  RopePick:
+    Clips:
+    - {fileID: 8300000, guid: 019ea2d39afb53b2b6e2c639ac9dc72a, type: 3}
+    Volume: 0.45
+    PitchJitter: 0.08
+    Cooldown: 0.05
+  RopePlace:
+    Clips:
+    - {fileID: 8300000, guid: 3d195081672959778c31e7f7503fbef4, type: 3}
+    Volume: 0.65
+    PitchJitter: 0.08
+    Cooldown: 0.05
+  RopeRemove:
+    Clips:
+    - {fileID: 8300000, guid: e9fe1b1c7c655fabb1013ba3d8b4114c, type: 3}
+    Volume: 0.55
+    PitchJitter: 0.08
+    Cooldown: 0.05
+  RopeSnap:
+    Clips:
+    - {fileID: 8300000, guid: fd9d1d439d85554780b4d7a8e78c978f, type: 3}
+    - {fileID: 8300000, guid: d1768a9bdfca5830a2919364bb36f90c, type: 3}
+    Volume: 0.85
+    PitchJitter: 0.1
+    Cooldown: 0.05
+  RopeReinforce:
+    Clips:
+    - {fileID: 8300000, guid: 03344833238753858503e4245636b044, type: 3}
+    Volume: 0.65
+    PitchJitter: 0.05
+    Cooldown: 0.1
+  RopeCreakLoop: {fileID: 8300000, guid: 86949fa0e04e567fa3448d70eb350119, type: 3}
+  RopeCreakVolume: 0.45
+  SlowMoEnter:
+    Clips:
+    - {fileID: 8300000, guid: 455b9687f61c536db967371937961dc2, type: 3}
+    Volume: 0.75
+    PitchJitter: 0
+    Cooldown: 0.2
+  SlowMoExit:
+    Clips:
+    - {fileID: 8300000, guid: de776e1abf16516e9b063e0c9b6c5eb8, type: 3}
+    Volume: 0.55
+    PitchJitter: 0
+    Cooldown: 0.2
+  SlowMoLowPass: 900
+  ZoneWarning:
+    Clips:
+    - {fileID: 8300000, guid: a484d78d65e65100bcfd5d74fb1310dd, type: 3}
+    Volume: 0.5
+    PitchJitter: 0.04
+    Cooldown: 0.3
+  UiClick:
+    Clips:
+    - {fileID: 8300000, guid: 7255cbe285aa5ca6b41ab3da06d532ac, type: 3}
+    Volume: 0.45
+    PitchJitter: 0.05
+    Cooldown: 0.03
+  Error:
+    Clips:
+    - {fileID: 8300000, guid: 78e781b4a59652c2b8d7c221c1364b12, type: 3}
+    Volume: 0.35
+    PitchJitter: 0
+    Cooldown: 0.2
+  ResultsTick:
+    Clips:
+    - {fileID: 8300000, guid: e7b808e97b885ecab138a2c825c728b4, type: 3}
+    Volume: 0.45
+    PitchJitter: 0.03
+    Cooldown: 0.05
+  LifeLost:
+    Clips:
+    - {fileID: 8300000, guid: c0e7ca7c3c6b53a9aa6cac78a8cfc290, type: 3}
+    Volume: 0.8
+    PitchJitter: 0
+    Cooldown: 0.3
+  FloorStart:
+    Clips:
+    - {fileID: 8300000, guid: 708683acee32529983c2f518c12808e8, type: 3}
+    Volume: 0.6
+    PitchJitter: 0
+    Cooldown: 0.5
+  GameOver:
+    Clips:
+    - {fileID: 8300000, guid: 431c41ca3e065cdfaf61779ed10b6ebd, type: 3}
+    Volume: 0.8
+    PitchJitter: 0
+    Cooldown: 1
+  Music: {fileID: 0}
+  MusicVolume: 0.35
+  Ambience: {fileID: 8300000, guid: 095c5333b51a57c5bff4f2d859e7044f, type: 3}
+  AmbienceVolume: 0.25

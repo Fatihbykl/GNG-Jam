@@ -236,6 +236,7 @@ namespace KatKat
         private void OnGasIgnited(Item item)
         {
             GameHUD.Float(item.Body.worldCenterOfMass + Vector3.up * 0.8f, "FİTİL!", new Color(1f, 0.55f, 0.1f));
+            AudioDirector.Play(Sound.Fuse, item.Body.worldCenterOfMass);
             ShowMessage($"{item.DisplayName} tutuştu! Tıklayıp ip at, yoksa patlar");
             SlowMo.TryTrigger();
         }
@@ -246,6 +247,7 @@ namespace KatKat
             if (!exploded)
             {
                 GameHUD.Float(pos + Vector3.up * 0.8f, "SÖNDÜ", new Color(0.45f, 0.95f, 0.5f));
+                AudioDirector.Play(Sound.Extinguish, pos);
                 ShowMessage($"{item.DisplayName} sabitlendi, fitil söndü");
                 return;
             }
@@ -529,6 +531,7 @@ namespace KatKat
             if (!Budget.TrySpend(Config.reinforceCost))
             {
                 ShowMessage("Destek için bütçe yok");
+                AudioDirector.Play(Sound.Error);
                 return;
             }
             link.Reinforce(Config.reinforceMultiplier);
@@ -558,6 +561,7 @@ namespace KatKat
             if (best == null)
             {
                 ShowMessage("Yakında ankraj yok");
+                AudioDirector.Play(Sound.Error);
                 return;
             }
 
@@ -566,6 +570,7 @@ namespace KatKat
             if (link == null)
             {
                 ShowMessage(error);
+                AudioDirector.Play(Sound.Error);
                 return;
             }
             link.Arm();

@@ -98,10 +98,12 @@ namespace KatKat
                     {
                         _pending = RopeEndpoint.ForItem(item, hit.point);
                         HasPending = true;
+                        AudioDirector.Play(Sound.RopePick, hit.point);
                     }
                     else if (item != null)
                     {
                         _gm.ShowMessage($"{item.DisplayName} bağlanamaz");
+                        AudioDirector.Play(Sound.Error);
                     }
                 }
                 else
@@ -113,6 +115,7 @@ namespace KatKat
                     if (!target.IsValid)
                     {
                         _gm.ShowMessage("İpi bir kolona, zemin halkasına ya da başka bir eşyaya bağla");
+                        AudioDirector.Play(Sound.Error);
                     }
                     else if (_gm.TryCreateRope(_pending, target, _gm.SelectedRopeType, out string error) != null)
                     {
@@ -122,6 +125,7 @@ namespace KatKat
                     else
                     {
                         _gm.ShowMessage(error);
+                        AudioDirector.Play(Sound.Error);
                     }
                 }
             }
