@@ -14,20 +14,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ColumnPrefab: {fileID: 1392904898586549298, guid: 00d8542017939244d9e23138af195e60, type: 3}
   BearingColumnPrefab: {fileID: 0}
-  WallPrefab: {fileID: 9218598344423901948, guid: 30bbdc979949d6c4f81d8c2c161bc45b, type: 3}
+  WallPrefab: {fileID: 5998774709281236572, guid: cada391a9ebfd354287aa1fc6c277c11, type: 3}
   WallPrefabWeight: 2
-  WallVariants:
-  - Prefab: {fileID: 7728635323272400690, guid: 6dd352eedf423944f86b02450f530f41, type: 3}
-    Weight: 1
-  CeilingPrefab: {fileID: 8970670169747496822, guid: 3aecbb7a0ad1308488d7e3d790d39efb, type: 3}
+  WallVariants: []
+  CeilingPrefab: {fileID: 6338011634302343839, guid: f9b9e9fc974a6da4c98231afdf79ae3d, type: 3}
   RubblePrefab: {fileID: 7808480193478641594, guid: 9beee7fdc091f5f4489af07695acb6da, type: 3}
   BrokenBrickPrefabs:
   - {fileID: 919132149155446097, guid: a8e7a0a9cc00608418feecce133a341c, type: 3}
   - {fileID: 919132149155446097, guid: b8fe6128a5f10f84daf86b8b91fbf45d, type: 3}
   - {fileID: 919132149155446097, guid: fdf06a71bba074741b6b5cb74afd21cc, type: 3}
-  ColumnAnchorPrefab: {fileID: 8479085579402387634, guid: 3ec0d151a476781419f67e6dd914d6c9, type: 3}
-  FloorRingPrefab: {fileID: 5452616181484888971, guid: d621858b170f37d478b547e553177cd4, type: 3}
-  ChargeMarkerPrefab: {fileID: 2411810382320939322, guid: 04f4b88b9a615b043968f091a340abe4, type: 3}
+  ColumnAnchorPrefab: {fileID: 6688786601716941019, guid: 3aee8b0dc8e1449478d708e7e1c71359, type: 3}
+  FloorRingPrefab: {fileID: 6139103665857331437, guid: 3cb73d09503c79c4c8d312111c92526c, type: 3}
+  ChargeMarkerPrefab: {fileID: 5761259326676251487, guid: 6ba08dee476bebc4386e19f870205c12, type: 3}
   FadeMaterial: {fileID: 2100000, guid: 995a1bf52717478cb6cbc54699f368b5, type: 2}
   ParticleMaterial: {fileID: 2100000, guid: a32ee54b39aa485fba5f8050cc9c9e44, type: 2}
   FractureInteriorMaterial: {fileID: 2100000, guid: 698b910fc82be47478ab5914d3d8ee3f, type: 2}
@@ -46,3 +44,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: d71b7e9849b6c1542bd308c59a0943f2, type: 2}
   - {fileID: 11400000, guid: 6b7c8b3eb00b64340930d045c40794e8, type: 2}
   - {fileID: 11400000, guid: 4891f03f29e2c5049862dbcd683558d5, type: 2}
+  - {fileID: 11400000, guid: 4583b3cdb1d3a444f83852eef65fe175, type: 2}

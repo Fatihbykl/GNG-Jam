@@ -43,18 +43,24 @@ namespace KatKat
         {
             Columns.Add(column);
             Vector3 pos = column.WorldCenter + Vector3.down * (column.SlotSize.y * 0.25f);
-            GameObject marker;
             if (markerPrefab != null)
             {
-                marker = PrefabPlacement.SpawnVisual(markerPrefab, "Charge", column.transform, pos, column.transform.rotation);
+                // Kolonun dört yüzüne birer set (arkası yüze, önü dışarı): hangi açıdan bakılsa görünür
+                for (int k = 0; k < 4; k++)
+                {
+                    Quaternion face = column.transform.rotation * Quaternion.Euler(0f, 90f * k, 0f);
+                    float half = (k % 2 == 0 ? column.SlotSize.z : column.SlotSize.x) * 0.5f;
+                    _markers.Add(PrefabPlacement.SpawnVisual(markerPrefab, "Charge", column.transform,
+                        pos + face * Vector3.forward * half, face));
+                }
             }
             else
             {
                 var size = new Vector3(column.SlotSize.x * 1.25f, 0.35f, column.SlotSize.z * 1.25f);
-                marker = GameMaterials.CreateBox("Charge", null, pos, size, GameMaterials.ChargeColor, false);
+                var marker = GameMaterials.CreateBox("Charge", null, pos, size, GameMaterials.ChargeColor, false);
                 marker.transform.SetParent(column.transform, true);
+                _markers.Add(marker);
             }
-            _markers.Add(marker);
         }
 
         public void Detonate(GameConfig config, GameObject vfxPrefab)
@@ -74,6 +80,8 @@ namespace KatKat
             {
                 if (column == null) continue;
                 Vector3 pos = column.WorldCenter;
+                // Kolonun taşıdığı tavan döşemeleri de patlamada kırılsın: tepeye yakınlık da sayılır
+                Vector3 top = pos + Vector3.up * (column.SlotSize.y * 0.5f);
                 SpawnVfx(vfxPrefab, pos);
                 Cut(column, pos, config);
 
@@ -82,7 +90,8 @@ namespace KatKat
                 {
                     var rb = col.attachedRigidbody;
                     if (rb != null && !rb.isKinematic && rb.TryGetComponent<Fracturable>(out var fracturable) &&
-                        fracturable.ShatterOnImpact && !fracturable.IsShattered && Vector3.Distance(col.ClosestPoint(pos), pos) <= config.shatterBlastRadius)
+                        fracturable.ShatterOnImpact && !fracturable.IsShattered &&
+                        Mathf.Min(Vector3.Distance(col.ClosestPoint(pos), pos), Vector3.Distance(col.ClosestPoint(top), top)) <= config.shatterBlastRadius)
                     {
                         fracturable.Shatter(pos, config.explosionKick);
                         continue;

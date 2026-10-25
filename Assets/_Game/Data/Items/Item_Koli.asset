@@ -13,10 +13,11 @@ MonoBehaviour:
   m_Name: Item_Koli
   m_EditorClassIdentifier: 
   DisplayName: Koli
-  Prefab: {fileID: 1628204544705973370, guid: 2dd592ba089ca45478a40c88d4dcbf5b, type: 3}
+  Prefab: {fileID: 7013529303392426722, guid: a8722710ad826d24081873ab9c40bb9b, type: 3}
   Size: 0
   Mass: 8
   CanBeTied: 1
+  Volatile: 0
   FootprintRadius: 0
   SpawnWeight: 1
   MinFloor: 0
