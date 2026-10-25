@@ -42,6 +42,17 @@ namespace KatKat
         public float fogStart = 35f;
         public float fogEnd = 130f;
 
+        [Header("Yükseklik sisi (binanın altı)")]
+        public bool heightFog = true;
+        public Color heightFogColor = new Color(0.8f, 0.86f, 0.95f);
+        [Tooltip("Sisin üst yüzeyi aktif katın tabanından kaç metre aşağıda.")]
+        public float heightFogOffset = 3.5f;
+        [Tooltip("Yüzeyin altında metre başına yoğunluk; büyüdükçe kule daha çabuk kaybolur.")]
+        public float heightFogDensity = 0.22f;
+        [Range(0f, 1f)] public float heightFogNoise = 0.35f;
+        public float heightFogNoiseScale = 0.06f;
+        public float heightFogNoiseSpeed = 0.35f;
+
         [Header("Post-processing")]
         public TonemappingMode tonemapping = TonemappingMode.ACES;
         public float postExposure = 0.7f;

@@ -34,9 +34,13 @@ namespace KatKat
             _gm = gm;
             _cam = cam;
             _baseFov = cam.fieldOfView;
-            cam.GetUniversalAdditionalCameraData().renderPostProcessing = true;
+            var camData = cam.GetUniversalAdditionalCameraData();
+            camData.renderPostProcessing = true;
+            // Yükseklik sisi sahne derinliğini okur
+            camData.requiresDepthTexture = true;
 
             BuildVolume();
+            gameObject.AddComponent<HeightFog>().Init(gm, cam);
 
             _sun = FindSun();
             _fill = new GameObject("FillLight").AddComponent<Light>();
