@@ -61,6 +61,14 @@ namespace KatKat
         [Tooltip("Eşyaların zemindeki sürtünmesi; tahmin bu değeri kullanır.")]
         [Range(0f, 1f)] public float itemFriction = 0.4f;
 
+        [Header("Gaz tüpü (ikinci patlama)")]
+        [Tooltip("Bağsız gaz tüpüne itki ulaşınca fitil yanar; bu kadar saniye sonra patlar. Bu sürede ip atılırsa söner.")]
+        public float gasFuse = 0.7f;
+        [Tooltip("Gaz patlamasının itki dalgası yarıçapı (m).")]
+        public float gasBlastRadius = 3.5f;
+        [Tooltip("Gaz patlamasının itkisi, bir şarj dalgasına göre kaç kat.")]
+        public float gasBlastStrength = 1.6f;
+
         [Header("Duvar düşüşü (patlama sırasına bağlı)")]
         [Tooltip("Duvar, dışa bakan yönü çöküş okuyla bu kadar (cos) aynı yöndeyse dışa düşer; değilse içe.")]
         [Range(-1f, 1f)] public float wallOutwardDot = 0.3f;

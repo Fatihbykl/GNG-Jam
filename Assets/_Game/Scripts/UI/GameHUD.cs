@@ -219,7 +219,8 @@ namespace KatKat
             GUI.color = lifeRisk ? Bad : impact.SmallFalls > 0 || impact.Snaps > 0 ? Warn : Good;
             string falls = impact.BigFalls + impact.SmallFalls == 0
                 ? "Tahmin: hiçbir eşya düşmez"
-                : $"Tahmin: {impact.BigFalls} büyük, {impact.SmallFalls} küçük eşya düşer";
+                : $"Tahmin: {impact.BigFalls} büyük, {impact.SmallFalls} küçük eşya düşer" +
+                  (impact.GasBlasts > 0 ? $"  ({impact.GasBlasts} gaz patlar)" : "");
             GUI.Label(new Rect(x, y, w, 26f), falls, _label);
             GUI.color = old;
             y += 28f;
@@ -381,7 +382,7 @@ namespace KatKat
             {
                 case GameState.Planning:
                     text = "Sol tık: eşya → ankraj / eşya   •   Sağ tık: iptal / ipi sil   •   Sağ sürükle: döndür   •   " +
-                           "Tekerlek: yakınlaş   •   Q/E: açı   •   F: odakla   •   1-3: ip tipi   •   F1: debug";
+                           $"Tekerlek: yakınlaş   •   Q/E: açı   •   F: odakla   •   1-{_gm.RopeTypes.Length}: ip tipi   •   F1: debug";
                     break;
                 case GameState.Detonating:
                 case GameState.Settling:

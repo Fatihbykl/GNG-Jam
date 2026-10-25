@@ -206,6 +206,71 @@ namespace KatKat.Tests
         }
 
         [Test]
+        public void Untied_Gas_Tank_Explodes_And_Pushes_Neighbors_Tied_One_Does_Not()
+        {
+            var fp = new Rect(-4.5f, -3f, 9f, 6f);
+            var ctx = Ctx(Vector2.right, 1f);
+            ctx.Radius = 1.5f;
+            ctx.GasFuse = 0.1f;
+            ctx.GasStrength = 1.6f;
+            ctx.GasRadius = 3.5f;
+
+            foreach (bool tied in new[] { false, true })
+            {
+                var bodies = new List<CollapseImpulse.SimBody>
+                {
+                    // Gaz tüpü dalganın içinde; komşu eşya dalganın dışında, tüpün solunda
+                    new CollapseImpulse.SimBody { Position = new Vector2(-1f, 0f), Mass = 15f, BaseAccel = 15f, Radius = 0.2f, Volatile = true },
+                    new CollapseImpulse.SimBody { Position = new Vector2(-2.5f, 0f), Mass = 8f, BaseAccel = 15f, Radius = 0.25f },
+                };
+                var ties = new List<CollapseImpulse.SimTie>();
+                if (tied)
+                {
+                    ties.Add(new CollapseImpulse.SimTie
+                    {
+                        Body = 0, Attach = new Vector2(-1f, 0f), Anchor = new Vector2(-1.5f, 0f), Length = 0.6f, BreakForce = 9000f
+                    });
+                }
+                var waves = WaveAt(new Vector2(-1f, 0f));
+                CollapseImpulse.Simulate(bodies, ties, new List<CollapseImpulse.SimWall>(), waves, ctx, fp, 0.4f);
+
+                if (tied)
+                {
+                    Assert.AreNotEqual(CollapseImpulse.Outcome.Explodes, bodies[0].Result);
+                    Assert.AreEqual(CollapseImpulse.Outcome.Stays, bodies[1].Result);
+                }
+                else
+                {
+                    Assert.AreEqual(CollapseImpulse.Outcome.Explodes, bodies[0].Result);
+                    Assert.Less(bodies[1].End.x, -2.8f, "patlama komşuyu dışa (sola) itmeli");
+                }
+            }
+        }
+
+        [Test]
+        public void Packed_Items_Move_As_One_Mass()
+        {
+            var fp = new Rect(-4.5f, -3f, 9f, 6f);
+            var bodies = new List<CollapseImpulse.SimBody>
+            {
+                new CollapseImpulse.SimBody { Position = new Vector2(0f, 0f), Mass = 90f, BaseAccel = 18f, Radius = 0.3f },
+                new CollapseImpulse.SimBody { Position = new Vector2(0.8f, 0f), Mass = 8f, BaseAccel = 15f, Radius = 0.25f },
+            };
+            var ties = new List<CollapseImpulse.SimTie>
+            {
+                new CollapseImpulse.SimTie { Body = 1, OtherBody = 0 },
+                new CollapseImpulse.SimTie
+                {
+                    Body = 0, Attach = new Vector2(0f, 0f), Anchor = new Vector2(-1f, 0f), Length = 1.05f, BreakForce = 9000f
+                },
+            };
+            CollapseImpulse.Simulate(bodies, ties, new List<CollapseImpulse.SimWall>(), WaveAt(new Vector2(0f, 0f)),
+                Ctx(Vector2.right, 1f), fp, 0.4f);
+            Assert.AreEqual((bodies[0].End - bodies[0].Position).x, (bodies[1].End - bodies[1].Position).x, 1e-4f);
+            Assert.Less(bodies[1].End.x, 1f, "paket ankraja bağlı ana eşyayla birlikte tutulmalı");
+        }
+
+        [Test]
         public void Rope_Released_Before_Wave_Does_Not_Hold()
         {
             var fp = new Rect(-4.5f, -3f, 9f, 6f);

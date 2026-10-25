@@ -16,6 +16,8 @@ namespace KatKat
         public ItemSize Size = ItemSize.Small;
         public float Mass = 10f;
         public bool CanBeTied = true;
+        [Tooltip("Gaz tüpü: bağsızken çöküş itkisi ulaşırsa fitili yanar ve patlar (ikinci patlama, çevresini savurur).")]
+        public bool Volatile;
 
         [Header("Yerleşim")]
         [Tooltip("Zeminde kapladığı yarıçap (m). 0 = model sınırlarından otomatik.")]

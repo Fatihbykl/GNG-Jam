@@ -147,7 +147,8 @@ namespace KatKat
                 }
 
                 string text;
-                if (inside)
+                if (item.Exploded) text = "bağsızdı, patladı (ikinci patlama)";
+                else if (inside)
                 {
                     if (best != null) text = $"{best.Type.DisplayName} tuttu (tepe %{best.PeakRatio * 100f:0})";
                     else if (packed) text = "pakette kaldı";

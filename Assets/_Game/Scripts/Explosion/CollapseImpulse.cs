@@ -21,6 +21,17 @@ namespace KatKat
         {
             public float Time;
             public List<Vector2> Columns;
+            /// <summary>İtki çarpanı (0 = 1).</summary>
+            public float Strength;
+            /// <summary>Etki yarıçapı (0 = <see cref="PushContext.Radius"/>).</summary>
+            public float Radius;
+            /// <summary>Gaz patlaması: çöküş yönü yerine patlama noktasından dışa iter.</summary>
+            public bool Radial;
+
+            public static Wave Blast(float time, Vector2 at, float strength, float radius) => new Wave
+            {
+                Time = time, Columns = new List<Vector2> { at }, Strength = strength, Radius = radius, Radial = true
+            };
         }
 
         /// <summary>Kat boyunca sabit itki ayarları (Detonate anında kilitlenir).</summary>
@@ -33,6 +44,10 @@ namespace KatKat
             public float Share;
             public float Duration;
             public float Radius;
+            /// <summary>Gaz tüpü fitil süresi ve patlama dalgası (tahminde ikinci patlama için).</summary>
+            public float GasFuse;
+            public float GasStrength;
+            public float GasRadius;
 
             public static PushContext For(Rect footprint, Vector3 direction, float strength, GameConfig cfg)
             {
@@ -43,7 +58,10 @@ namespace KatKat
                     Direction = dir.sqrMagnitude > 1e-6f ? dir.normalized : Vector2.zero,
                     Share = dir.sqrMagnitude > 1e-6f ? DirectionalShare(strength, cfg) : 0f,
                     Duration = cfg.pushDuration,
-                    Radius = cfg.waveRadius
+                    Radius = cfg.waveRadius,
+                    GasFuse = cfg.gasFuse,
+                    GasStrength = cfg.gasBlastStrength,
+                    GasRadius = cfg.gasBlastRadius
                 };
             }
         }
@@ -82,13 +100,30 @@ namespace KatKat
         /// <summary><paramref name="t"/> anında (sıra başlangıcından itibaren) eşyaya uygulanan yatay ivme.</summary>
         public static Vector2 AccelAt(Vector2 pos, float baseAccel, IList<Wave> waves, float t, in PushContext ctx)
         {
-            float sum = 0f;
+            Vector2 collapse = Vector2.zero;
+            bool hasCollapse = false;
+            Vector2 total = Vector2.zero;
             foreach (var w in waves)
             {
-                if (t >= w.Time && t < w.Time + ctx.Duration) sum += WaveWeight(pos, w.Columns, ctx.Radius);
+                if (t < w.Time || t >= w.Time + ctx.Duration) continue;
+                float k = WaveWeight(pos, w.Columns, w.Radius > 0f ? w.Radius : ctx.Radius) *
+                          (w.Strength > 0f ? w.Strength : 1f);
+                if (k <= 0f) continue;
+
+                if (!hasCollapse)
+                {
+                    collapse = PushDirection(pos - ctx.Center, ctx.Direction, ctx.Share);
+                    hasCollapse = true;
+                }
+                Vector2 dir = collapse;
+                if (w.Radial)
+                {
+                    Vector2 away = pos - w.Columns[0];
+                    dir = away.sqrMagnitude > 1e-4f ? away.normalized : collapse;
+                }
+                total += dir * k;
             }
-            if (sum <= 0f) return Vector2.zero;
-            return PushDirection(pos - ctx.Center, ctx.Direction, ctx.Share) * (baseAccel * sum);
+            return total * baseAccel;
         }
 
         /// <summary>Bina bu duvarın tarafına yatıyorsa duvar dışa düşer; karşı ve yan taraflarda içe çekilir.</summary>
@@ -125,7 +160,9 @@ namespace KatKat
             Stays,
             Slides,
             Hangs,
-            Falls
+            Falls,
+            /// <summary>Gaz tüpü: bağsız kaldı, patladı.</summary>
+            Explodes
         }
 
         public class SimBody
@@ -134,9 +171,13 @@ namespace KatKat
             public float Mass;
             public float BaseAccel;
             public float Radius;
+            /// <summary>Gaz tüpü: bağsızken itki alırsa fitili yanar.</summary>
+            public bool Volatile;
 
             public Vector2 End;
             public Outcome Result;
+            public float IgniteTime = float.PositiveInfinity;
+            public bool Ignited => !float.IsPositiveInfinity(IgniteTime);
         }
 
         public class SimTie
@@ -179,6 +220,7 @@ namespace KatKat
             public Vector2 Offset;
             public Vector2 Velocity;
             public bool Done;
+            public bool Exploded;
         }
 
         private static readonly List<SimTie> Taut = new List<SimTie>();
@@ -192,17 +234,35 @@ namespace KatKat
             in PushContext ctx, Rect footprint, float friction)
         {
             var groups = BuildGroups(bodies, ties);
+            var allWaves = new List<Wave>(waves);
             float lastWaveEnd = 0f;
-            foreach (var w in waves) lastWaveEnd = Mathf.Max(lastWaveEnd, w.Time + ctx.Duration);
+            foreach (var w in allWaves) lastWaveEnd = Mathf.Max(lastWaveEnd, w.Time + ctx.Duration);
             float mu = friction * Gravity;
 
             for (float t = 0f; t < MaxSimTime; t += StepTime)
             {
+                // Fitili biten gaz tüpleri patlar: yeni bir dalga, tüp oyundan çıkar
+                foreach (var g in groups)
+                {
+                    if (g.Done) continue;
+                    foreach (int m in g.Members)
+                    {
+                        var b = bodies[m];
+                        if (!b.Ignited || t < b.IgniteTime + ctx.GasFuse) continue;
+                        b.End = b.Position + g.Offset;
+                        allWaves.Add(Wave.Blast(t, b.End, ctx.GasStrength, ctx.GasRadius));
+                        lastWaveEnd = Mathf.Max(lastWaveEnd, t + ctx.Duration);
+                        g.Done = true;
+                        g.Exploded = true;
+                        break;
+                    }
+                }
+
                 bool moving = t < lastWaveEnd;
                 foreach (var g in groups)
                 {
                     if (g.Done) continue;
-                    StepGroup(g, bodies, walls, waves, ctx, footprint, mu, t);
+                    StepGroup(g, bodies, ties, walls, allWaves, ctx, footprint, mu, t);
                     if (g.Velocity.magnitude > StopSpeed) moving = true;
                 }
                 if (!moving) break;
@@ -215,7 +275,7 @@ namespace KatKat
                     var b = bodies[m];
                     if (g.Done)
                     {
-                        b.Result = Outcome.Falls;
+                        b.Result = g.Exploded ? Outcome.Explodes : Outcome.Falls;
                         continue;
                     }
                     b.End = b.Position + g.Offset;
@@ -244,6 +304,7 @@ namespace KatKat
             {
                 bodies[i].End = bodies[i].Position;
                 bodies[i].Result = Outcome.Stays;
+                bodies[i].IgniteTime = float.PositiveInfinity;
                 int root = Find(i);
                 if (!byRoot.TryGetValue(root, out var g))
                 {
@@ -265,15 +326,17 @@ namespace KatKat
             return groups;
         }
 
-        private static void StepGroup(Group g, IList<SimBody> bodies, IList<SimWall> walls, IList<Wave> waves,
-            in PushContext ctx, Rect footprint, float mu, float t)
+        private static void StepGroup(Group g, IList<SimBody> bodies, IList<SimTie> ties, IList<SimWall> walls,
+            IList<Wave> waves, in PushContext ctx, Rect footprint, float mu, float t)
         {
             // İtki: paketin kütle ağırlıklı ortalaması
             Vector2 force = Vector2.zero;
             foreach (int m in g.Members)
             {
                 var b = bodies[m];
-                force += b.Mass * AccelAt(b.Position + g.Offset, b.BaseAccel, waves, t, ctx);
+                Vector2 a = AccelAt(b.Position + g.Offset, b.BaseAccel, waves, t, ctx);
+                force += b.Mass * a;
+                if (b.Volatile && !b.Ignited && a.sqrMagnitude > 1e-6f && !IsSecured(m, ties, t)) b.IgniteTime = t;
             }
             Vector2 drive = force / g.Mass;
 
@@ -322,6 +385,18 @@ namespace KatKat
                     return;
                 }
             }
+        }
+
+        /// <summary>Gaz tüpü doğrudan bir ipe (ankraja tutan ya da paket) bağlı mı? Oyundaki <see cref="Item.IsTied"/> karşılığı.</summary>
+        private static bool IsSecured(int body, IList<SimTie> ties, float t)
+        {
+            foreach (var tie in ties)
+            {
+                if (tie.Body != body && tie.OtherBody != body) continue;
+                if (tie.OtherBody >= 0) return true;
+                if (!tie.Snapped && t < tie.ReleaseTime) return true;
+            }
+            return false;
         }
 
         private static bool HasActiveTie(Group g, float t)

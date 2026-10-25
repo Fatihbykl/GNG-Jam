@@ -34,6 +34,8 @@ namespace KatKat
         public int SmallFalls { get; private set; }
         public int Snaps { get; private set; }
         public int OutwardWalls { get; private set; }
+        /// <summary>Bağsız kalıp patlayacak gaz tüpü sayısı (küçük düşenlere de sayılır).</summary>
+        public int GasBlasts { get; private set; }
         public int EstimatedPenalty { get; private set; }
 
         private GameManager _gm;
@@ -97,6 +99,7 @@ namespace KatKat
                     body.Mass = item.Body.mass;
                     body.BaseAccel = CollapseImpulse.PushAccel(item.Size, _gm.FloorNumber, cfg);
                     body.Radius = item.Definition != null ? item.Definition.ResolveFootprintRadius() * 0.6f : 0.25f;
+                    body.Volatile = item.IsVolatile;
                 }
                 _bodies.Add(body);
             }
@@ -186,7 +189,7 @@ namespace KatKat
         {
             Labels.Clear();
             _usedLines = 0;
-            BigFalls = SmallFalls = Snaps = OutwardWalls = 0;
+            BigFalls = SmallFalls = Snaps = OutwardWalls = GasBlasts = 0;
             float y = floor.BaseY + 0.12f;
 
             for (int i = 0; i < _bodies.Count && i < floor.Items.Count; i++)
@@ -198,6 +201,7 @@ namespace KatKat
                 Color color;
                 switch (b.Result)
                 {
+                    case CollapseImpulse.Outcome.Explodes:
                     case CollapseImpulse.Outcome.Falls: color = FallColor; break;
                     case CollapseImpulse.Outcome.Hangs:
                     case CollapseImpulse.Outcome.Slides: color = SlideColor; break;
@@ -220,7 +224,13 @@ namespace KatKat
                 }
 
                 Vector3 top = item.Body.worldCenterOfMass + Vector3.up * 0.9f;
-                if (b.Result == CollapseImpulse.Outcome.Falls)
+                if (b.Result == CollapseImpulse.Outcome.Explodes)
+                {
+                    GasBlasts++;
+                    SmallFalls++;
+                    Labels.Add(new Label { World = top, Text = "PATLAR! bağla", Color = FallColor });
+                }
+                else if (b.Result == CollapseImpulse.Outcome.Falls)
                     Labels.Add(new Label { World = top, Text = item.Size == ItemSize.Big ? "DÜŞER  −1 CAN" : "DÜŞER", Color = FallColor });
                 else if (b.Result == CollapseImpulse.Outcome.Hangs)
                     Labels.Add(new Label { World = top, Text = "ASILI KALIR", Color = SlideColor });

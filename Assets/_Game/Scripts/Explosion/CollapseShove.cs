@@ -31,6 +31,7 @@ namespace KatKat
             _ctx = CollapseImpulse.PushContext.For(floor.Footprint, direction, strength, cfg);
             _start = Time.time;
             _waves.Clear();
+            _fuses.Clear();
         }
 
         /// <summary>Şarj patlamadan hemen önce (kolonlar yerindeyken) çağrılır.</summary>
@@ -51,6 +52,7 @@ namespace KatKat
         {
             _floor = null;
             _waves.Clear();
+            _fuses.Clear();
         }
 
         private void ToppleWalls(ExplosiveCharge charge)
@@ -101,8 +103,83 @@ namespace KatKat
                 if (rb == null || rb.isKinematic || !rb.gameObject.activeInHierarchy) continue;
                 float baseAccel = CollapseImpulse.PushAccel(item.Size, _floorNumber, _cfg);
                 Vector2 a = CollapseImpulse.AccelAt(CollapseImpulse.Flat(rb.worldCenterOfMass), baseAccel, _waves, t, _ctx);
-                if (a != Vector2.zero) rb.AddForce(new Vector3(a.x, 0f, a.y), ForceMode.Acceleration);
+                if (a == Vector2.zero) continue;
+                rb.AddForce(new Vector3(a.x, 0f, a.y), ForceMode.Acceleration);
+
+                if (item.IsVolatile && !item.IsTied && !_fuses.ContainsKey(item))
+                {
+                    _fuses[item] = t + _cfg.gasFuse;
+                    GasIgnited?.Invoke(item);
+                }
             }
+
+            UpdateFuses(t);
         }
+
+        #region Gaz tüpü
+
+        /// <summary>Bağsız gaz tüpüne itki ulaştı, fitil yandı (ağır çekimde ip atılırsa söner).</summary>
+        public event System.Action<Item> GasIgnited;
+        /// <summary>Gaz tüpü patladı ya da fitili söndü (bool: patladı mı).</summary>
+        public event System.Action<Item, bool> GasResolved;
+
+        private readonly Dictionary<Item, float> _fuses = new Dictionary<Item, float>();
+        private readonly List<Item> _fuseDone = new List<Item>();
+
+        private void UpdateFuses(float t)
+        {
+            _fuseDone.Clear();
+            foreach (var pair in _fuses)
+            {
+                var item = pair.Key;
+                if (item == null || !item.gameObject.activeInHierarchy || item.Exploded)
+                {
+                    _fuseDone.Add(item);
+                    continue;
+                }
+                // Fitil yanarken ip atılırsa söner
+                if (item.IsTied)
+                {
+                    _fuseDone.Add(item);
+                    GasResolved?.Invoke(item, false);
+                    continue;
+                }
+                if (t < pair.Value) continue;
+                _fuseDone.Add(item);
+                ExplodeGas(item, t);
+            }
+            foreach (var item in _fuseDone) _fuses.Remove(item);
+        }
+
+        private void ExplodeGas(Item item, float t)
+        {
+            Vector3 pos = item.Body.worldCenterOfMass;
+            item.NoteExploded();
+            _waves.Add(CollapseImpulse.Wave.Blast(t, CollapseImpulse.Flat(pos), _cfg.gasBlastStrength, _cfg.gasBlastRadius));
+
+            // Yakındaki kırılabilir parçalar parçalanır, enkaz savrulur (eşyaları yalnızca dalga iter)
+            var hit = new HashSet<Rigidbody>();
+            foreach (var col in Physics.OverlapSphere(pos, _cfg.gasBlastRadius, ~0, QueryTriggerInteraction.Ignore))
+            {
+                var rb = col.attachedRigidbody;
+                if (rb == null || rb.isKinematic || rb == item.Body || !hit.Add(rb) || rb.TryGetComponent<Item>(out _)) continue;
+                if (rb.TryGetComponent<Fracturable>(out var fracturable) && fracturable.ShatterOnImpact && !fracturable.IsShattered &&
+                    Vector3.Distance(col.ClosestPoint(pos), pos) <= _cfg.shatterBlastRadius * 1.5f)
+                {
+                    fracturable.Shatter(pos, _cfg.explosionKick * 2f);
+                    continue;
+                }
+                rb.AddExplosionForce(_cfg.explosionKick * 2f, pos, _cfg.gasBlastRadius, _cfg.explosionUpward,
+                    ForceMode.VelocityChange);
+            }
+            foreach (var rope in Tensio.RopeController.AllRopes) rope.AddExplosionForce(_cfg.ropeBlastPower, pos, _cfg.gasBlastRadius);
+
+            AudioDirector.Play(Sound.Explosion, pos);
+            Vfx.Blast(pos, _floor.transform, _floor.BaseY);
+            item.gameObject.SetActive(false);
+            GasResolved?.Invoke(item, true);
+        }
+
+        #endregion
     }
 }

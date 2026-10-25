@@ -76,6 +76,7 @@ namespace KatKat
         private void Awake()
         {
             if (RopeTypes == null || RopeTypes.Length == 0) RopeTypes = RopeTypeSO.CreateDefaults();
+            EnsureNetType();
             if (Content == null) Content = GameContentSO.CreateDefault();
 
             Physics.defaultSolverIterations = 12;
@@ -91,12 +92,25 @@ namespace KatKat
             Impact = gameObject.AddComponent<ImpactPreview>();
             Impact.Init(this);
             Shove = gameObject.AddComponent<CollapseShove>();
+            Shove.GasIgnited += OnGasIgnited;
+            Shove.GasResolved += OnGasResolved;
             SlowMo = gameObject.AddComponent<SlowMoDirector>();
             SlowMo.Init(this);
             Placer = gameObject.AddComponent<RopePlacer>();
             Placer.Init(this, Orbit);
             gameObject.AddComponent<GameHUD>().Init(this);
             gameObject.AddComponent<ItemIndicators>().Init(this);
+        }
+
+        /// <summary>Sahnedeki ip listesinde file yoksa varsayılan file eklenir (Data/Rope_Net ile ayarlanabilir).</summary>
+        private void EnsureNetType()
+        {
+            foreach (var t in RopeTypes)
+            {
+                if (t != null && t.IsNet) return;
+            }
+            var list = new List<RopeTypeSO>(RopeTypes) { RopeTypeSO.CreateNet() };
+            RopeTypes = list.ToArray();
         }
 
         private void EnsureCameraAndLight()
@@ -216,6 +230,28 @@ namespace KatKat
         private void OnRopeBroken(RopeLink link)
         {
             if (link.Armed) Orbit.ShakeFrom(link.LastSnapPoint, Orbit.ShakeOnCharge * 0.4f);
+        }
+
+        /// <summary>Bağsız gaz tüpünün fitili yandı: ağır çekim açılır, oyuncu ip atarak söndürebilir.</summary>
+        private void OnGasIgnited(Item item)
+        {
+            GameHUD.Float(item.Body.worldCenterOfMass + Vector3.up * 0.8f, "FİTİL!", new Color(1f, 0.55f, 0.1f));
+            ShowMessage($"{item.DisplayName} tutuştu! Tıklayıp ip at, yoksa patlar");
+            SlowMo.TryTrigger();
+        }
+
+        private void OnGasResolved(Item item, bool exploded)
+        {
+            Vector3 pos = item.Body.worldCenterOfMass;
+            if (!exploded)
+            {
+                GameHUD.Float(pos + Vector3.up * 0.8f, "SÖNDÜ", new Color(0.45f, 0.95f, 0.5f));
+                ShowMessage($"{item.DisplayName} sabitlendi, fitil söndü");
+                return;
+            }
+            Orbit.ShakeFrom(pos, Orbit.ShakeOnCharge * 1.3f);
+            SlowMo.HitStop(Visuals.hitStopDuration, Visuals.hitStopScale);
+            ShowMessage($"{item.DisplayName} patladı!");
         }
 
         /// <summary>Şarjlı kolon patlarken ona bağlı ipler boşa çıkar.</summary>
@@ -416,12 +452,64 @@ namespace KatKat
             var link = RopeLink.Create(ActiveFloor.transform, type, typeIndex, a, b, length, cost, Config);
             link.Broken += OnRopeBroken;
             Ropes.Add(link);
+            if (type.IsNet) WrapNet(link, a.Item != null ? a.Item : b.Item);
             return link;
+        }
+
+        /// <summary>Filenin paketleyeceği eşyalar: yakındaki bağsız küçük eşyalar, en yakından başlayarak.</summary>
+        public List<Item> NetCandidates(Item host, RopeTypeSO type)
+        {
+            var result = new List<Item>();
+            if (host == null || type == null || !type.IsNet || ActiveFloor == null) return result;
+            Vector3 center = host.Body.worldCenterOfMass;
+            foreach (var item in ActiveFloor.Items)
+            {
+                if (item == null || item == host || !item.CanBeTied || item.IsTied || item.Size != ItemSize.Small ||
+                    !item.gameObject.activeInHierarchy) continue;
+                Vector3 d = item.Body.worldCenterOfMass - center;
+                d.y = 0f;
+                if (d.magnitude <= type.NetRadius) result.Add(item);
+            }
+            result.Sort((x, y) => Vector3.Distance(x.Body.worldCenterOfMass, center)
+                .CompareTo(Vector3.Distance(y.Body.worldCenterOfMass, center)));
+            if (result.Count > type.NetMaxItems) result.RemoveRange(type.NetMaxItems, result.Count - type.NetMaxItems);
+            return result;
+        }
+
+        /// <summary>File: yakındaki küçük eşyaları kısa iplerle ana eşyaya paketler; paket tek kütle gibi davranır.</summary>
+        private void WrapNet(RopeLink net, Item host)
+        {
+            if (host == null) return;
+            var type = net.Type;
+            int wrapped = 0;
+            foreach (var item in NetCandidates(host, type))
+            {
+                Vector3 from = item.Body.worldCenterOfMass, to = host.Body.worldCenterOfMass;
+                float length = Mathf.Max(0.5f, Vector3.Distance(from, to) * Config.ropeSlack);
+                float cost = RopeBudget.CostOf(length, type) + type.NetCostPerItem;
+                if (length > Config.maxRopeLength || !Budget.TrySpend(cost)) break;
+
+                var child = RopeLink.Create(ActiveFloor.transform, type, net.TypeIndex, RopeEndpoint.ForItem(item, from),
+                    RopeEndpoint.ForItem(host, to), length, cost, Config);
+                child.IsNetChild = true;
+                child.Broken += OnRopeBroken;
+                if (State != GameState.Planning) child.Arm(); // ağır çekimde atılan file hemen devrede
+                net.NetChildren.Add(child);
+                Ropes.Add(child);
+                wrapped++;
+            }
+            if (wrapped > 0) ShowMessage($"File: {wrapped} eşya {host.DisplayName} ile paketlendi");
         }
 
         public void RemoveRope(RopeLink link)
         {
             if (State != GameState.Planning || link == null) return;
+            foreach (var child in link.NetChildren)
+            {
+                if (child == null || !Ropes.Remove(child)) continue;
+                Budget.Refund(child.Cost);
+                Destroy(child.gameObject);
+            }
             Budget.Refund(link.Cost);
             Ropes.Remove(link);
             Destroy(link.gameObject);
@@ -484,7 +572,8 @@ namespace KatKat
             var plan = new RopePlan();
             foreach (var link in Ropes)
             {
-                if (link != null) plan.Entries.Add(link.ToPlanEntry());
+                // Filenin paket ipleri, file yeniden kurulunca kendiliğinden gelir
+                if (link != null && !link.IsNetChild) plan.Entries.Add(link.ToPlanEntry());
             }
             return plan;
         }

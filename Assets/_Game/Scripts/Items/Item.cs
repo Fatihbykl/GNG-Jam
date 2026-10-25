@@ -30,6 +30,12 @@ namespace KatKat
         /// <summary>İpini boşa çıkaran şarj sırasının adı.</summary>
         public string ReleasedBy { get; private set; }
 
+        /// <summary>Gaz tüpü: bağsız kalıp itki alırsa patlar.</summary>
+        public bool IsVolatile => Definition != null && Definition.Volatile;
+        /// <summary>Gaz tüpü patladı (sonuç ekranı için; obje kapanır ve bölge dışı sayılır).</summary>
+        public bool Exploded { get; private set; }
+
+        public void NoteExploded() => Exploded = true;
         public void NoteRopeSnapped(string ropeName) => SnappedRope = ropeName;
         public void NoteRopeReleased(string chargeLabel) => ReleasedBy = chargeLabel;
 

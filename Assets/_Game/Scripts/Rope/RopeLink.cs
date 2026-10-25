@@ -77,6 +77,10 @@ namespace KatKat
         public RopeEndpoint B;
         public float Length;
         public float Cost;
+        /// <summary>Bir filenin küçük eşyayı ana eşyaya bağlayan paket ipi.</summary>
+        public bool IsNetChild;
+        /// <summary>File ise paketlediği eşyaların ipleri (silinince onlar da gider).</summary>
+        public readonly System.Collections.Generic.List<RopeLink> NetChildren = new System.Collections.Generic.List<RopeLink>();
 
         public bool IsBroken { get; private set; }
         /// <summary>Bağlı olduğu şarjlı kolon patladı; ip bir ucundan serbest sallanıyor.</summary>

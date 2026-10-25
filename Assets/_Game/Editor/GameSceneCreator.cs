@@ -52,7 +52,7 @@ namespace KatKat.Editor
             if (!AssetDatabase.IsValidFolder(DataFolder)) AssetDatabase.CreateFolder("Assets/_Game", "Data");
 
             var defaults = RopeTypeSO.CreateDefaults();
-            string[] fileNames = { "Rope_Thin", "Rope_Steel", "Rope_Elastic" };
+            string[] fileNames = { "Rope_Thin", "Rope_Steel", "Rope_Elastic", "Rope_Net" };
             var result = new RopeTypeSO[defaults.Length];
 
             for (int i = 0; i < defaults.Length; i++)
